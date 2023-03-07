@@ -30,6 +30,7 @@ jobs:
           token: ${{ secrets.PRIVATE_TOKEN }}
       - name: Prepare repository build
         run: |
+          git switch -c apt-staging-branch
           rm -rf ${{ github.workspace }}/target/docs/apt-repo
           mv ${{ github.workspace }}/repository ${{ github.workspace }}/target/docs/apt-repo
       - name: Build repository
