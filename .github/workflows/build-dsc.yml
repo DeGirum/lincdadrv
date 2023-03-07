@@ -30,15 +30,15 @@ jobs:
           token: ${{ secrets.PRIVATE_TOKEN }}
       - name: Prepare repository build
         run: |
-          rm -rf ${{ github.workspace }}/target/apt-repo
-          mv ${{ github.workspace }}/repository ${{ github.workspace }}/target/apt-repo
+          rm -rf ${{ github.workspace }}/target/docs/apt-repo
+          mv ${{ github.workspace }}/repository ${{ github.workspace }}/target/docs/apt-repo
       - name: Build repository
-        run: reprepro --basedir ${{ github.workspace }}/target/apt-repo includedsc ORCA ${{ github.workspace }}/orca-driver_0.0.0.1.dsc
-        working-directory: ${{ github.workspace }}/target/apt-repo
+        run: reprepro --basedir ${{ github.workspace }}/target/docs/apt-repo includedsc ORCA ${{ github.workspace }}/orca-driver_0.0.0.1.dsc
+        working-directory: ${{ github.workspace }}/target/docs/apt-repo
       - name: Clean up repository build files
         run: |
-          rm -rf ${{ github.workspace }}/target/apt-repo/db
-          rm -rf ${{ github.workspace }}/target/apt-repo/conf
+          rm -rf ${{ github.workspace }}/target/docs/apt-repo/db
+          rm -rf ${{ github.workspace }}/target/docs/apt-repo/conf
       - run: echo "Repository structure built!"
       - name: Commit results
         run: |
