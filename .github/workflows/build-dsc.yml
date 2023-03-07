@@ -30,7 +30,6 @@ jobs:
           token: ${{ secrets.PRIVATE_TOKEN }}
       - name: Prepare repository build
         run: |
-          git switch -c apt-staging-branch
           rm -rf ${{ github.workspace }}/target/docs/apt-repo
           mv ${{ github.workspace }}/repository ${{ github.workspace }}/target/docs/apt-repo
       - name: Build repository
@@ -45,6 +44,7 @@ jobs:
         run: |
           git config --global user.name 'Alexander Bolotov'
           git config --global user.email 'bolotov@degirum.com'
+          git switch -c apt-staging-branch
           git commit -am "Automated diver source package commit"
           git push
         working-directory: ${{ github.workspace }}/target
