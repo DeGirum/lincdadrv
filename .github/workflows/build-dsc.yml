@@ -61,10 +61,10 @@ jobs:
       - name: Build repository
         run: reprepro -V --basedir ${{ github.workspace }}/target/docs/apt-repo includedeb ORCA ${{ github.workspace }}/cdapci-dkms_${{ steps.version.outputs.VERSION }}_all.deb
         working-directory: ${{ github.workspace }}/target/docs/apt-repo
-      - name: Clean up repository build files
-        run: |
-          rm -rf ${{ github.workspace }}/target/docs/apt-repo/db
-          rm -rf ${{ github.workspace }}/target/docs/apt-repo/conf
+      #- name: Clean up repository build files
+      #  run: |
+      #    rm -rf ${{ github.workspace }}/target/docs/apt-repo/db
+      #    rm -rf ${{ github.workspace }}/target/docs/apt-repo/conf
       - name: Commit results
         run: |
           git switch -c apt-staging-branch
