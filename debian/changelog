@@ -1,3 +1,9 @@
+cdapci-dkms (0.5.0.2) jammy; urgency=medium
+
+  * prototypes for 6.8 added
+
+ -- Alexander Bolotov <bolotov@degirum.com>  Thu, 23 May 2024 21:12:26 +0000
+
 cdapci-dkms (0.5.0.1) jammy; urgency=medium
 
   * Updated versioning scheme.
