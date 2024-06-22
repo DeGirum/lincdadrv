@@ -8,6 +8,10 @@
 # version 2, as published by the Free Software Foundation.
 #
 TARGET_MODULE := cdapci
+ifneq ($(KERNELRELEASE),)
+	obj-m := $(TARGET_MODULE).o
+	$(TARGET_MODULE)-objs := cdadrv.o cdamem.o cdares.o
+else
 THIS_MKFILE := $(lastword $(MAKEFILE_LIST))
 THIS_MKFILE_DIR := $(dir $(abspath $(THIS_MKFILE)))
 
@@ -48,10 +52,6 @@ FORCE_USR_MODE4='do /bin/chmod ug+rw $$d/resource* ; /bin/chown root:$(DG_GROUP)
 FORCE_USR_MODE5='for dd in $$(dirname -- $$(find $$d/cda/* -name "mmap")); do /bin/chmod ug+rw $$dd/mmap ; /bin/chown root:$(DG_GROUP) $$dd/mmap ; done'
 FORCE_USR_MODE6='done'
 FORCE_USR_MODE7='done'
-ifneq ($(KERNELRELEASE),)
-	obj-m := $(TARGET_MODULE).o
-	$(TARGET_MODULE)-objs := cdadrv.o cdamem.o cdares.o
-endif
 .PHONY: all
 all:
 	$(MAKE) -C $(BUILDDIR) M=$(THIS_MKFILE_DIR) modules
@@ -142,3 +142,4 @@ dkms-clean:
 	@$(foreach r,  $(shell ls /usr/src/ | grep $(TARGET_MODULE) | sed 's|-|/|g'), sudo -E dkms remove -m $r --all;)
 	-sudo -E rm -rf /usr/src/$(TARGET_MODULE)-$(TARGET_VERSION)
 
+endif
