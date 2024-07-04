@@ -743,7 +743,7 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	list_add(&memmap->list, &dev->mem_maps);
 	spin_unlock(&dev->mblk_sl);
 
-	//printk("map vaddr %p, pages %d\n", memmap->vaddr, npages);
+	dev_dbg(&dev->dev, "map vaddr %p, pages %d\n", memmap->vaddr, npages);
 	return 0;
 
 err_copy_to_user:
@@ -770,7 +770,7 @@ out:
 
 static void cda_free_map(struct cda_mmap *memmap)
 {
-	//printk("unmap vaddr %p, pages %d\n", memmap->vaddr, memmap->blk_cnt);
+	dev_dbg(&memmap->dev->dev, "unmap vaddr %p, pages %d\n", memmap->vaddr, memmap->blk_cnt);
 	cda_hide_memmap(memmap);
 	cda_release_map(memmap);
 	kobject_put(&memmap->kobj);

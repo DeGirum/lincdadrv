@@ -159,7 +159,7 @@ static int cda_pci_init(struct pci_dev *pcidev)
 	int ret;
 	ret = pci_enable_device_mem(pcidev);
 	if( ret ) {
-        printk("Cannot enable PCI device mem\n");
+		dev_err(&pcidev->dev, "Cannot enable PCI device mem\n");
 		goto err_en_devmem;
 	}
 

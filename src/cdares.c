@@ -96,7 +96,7 @@ int cda_init_interrupts(struct cda_dev *cdadev, void *owner, void __user *ureq)
 	struct cda_interrupts *ints;
 
 	if( cdadev->ints ) {
-		//printk("Interrupts are already attached");
+		dev_dbg(&cdadev->pcidev->dev, "Interrupts are already attached");
 		return -EINVAL; // Already attached
 	}
 	if( copy_from_user(&req, (void __user *)ureq, sizeof(req)) )
@@ -195,7 +195,7 @@ int cda_free_irqs(struct cda_dev *cdadev, void *owner)
 	if( cdadev->ints == NULL )
 		return -EINVAL;
 	if( cdadev->ints->owner != owner ) {
-		//dev_err(&cdadev->pcidev->dev, "Interrupts are not owned by %p", owner);
+		dev_dbg(&cdadev->pcidev->dev, "Interrupts are not owned by %p", owner);
 		return -EINVAL;
 	}
 	mutex_lock(&cdadev->ilock);
@@ -262,7 +262,7 @@ int cda_req_int(struct cda_dev *cdadev, void *owner, void __user *ureq)
 		vec->busy = false;
 	}
 	mutex_unlock(&cdadev->ilock);
-	//printk("Interrupt vector %d timeout: %ld count %u reset %d\n", req.vector, timeout, count, req.reset);
+	dev_dbg(&cdadev->pcidev->dev, "Interrupt vector %d timeout: %ld count %u reset %d\n", req.vector, timeout, count, req.reset);
 	return timeout > 0 ? 0 : timeout == 0 ? -ETIME : timeout;
 }
 
@@ -274,7 +274,7 @@ int cda_cancel_req(struct cda_dev *cdadev, void *owner)
 		return -EINVAL;
 
 	if( cdadev->ints->owner != owner ) {
-		//dev_err(&cdadev->pcidev->dev, "Interrupts are not owned by %p", owner);
+		dev_dbg(&cdadev->pcidev->dev, "Interrupts are not owned by %p", owner);
 		return -EINVAL;
 	}
 
@@ -493,7 +493,7 @@ int cda_open_bars(struct cda_dev *cdadev)
 		//Drop busy bit
 		res_child = cdadev->pcidev->resource[i].child;
 
-		printk("Store resource %d flag: 0x%lx\n", i, res_child->flags);
+		dev_info(&cdadev->dev, "Store resource %d flag: 0x%lx\n", i, res_child->flags);
 		cdadev->stored_flags[i] = res_child->flags;
 		if (IORESOURCE_BUSY & res_child->flags) {
 			res_child->flags &= ~IORESOURCE_BUSY;
@@ -522,7 +522,7 @@ void cda_release_bars(struct cda_dev *cdadev)
 
 		if( bars & (1 << i) ) {
 			cdadev->pcidev->resource[i].child->flags = cdadev->stored_flags[i];
-			printk("Restore resource %d flag: %lx\n", i, cdadev->stored_flags[i]);
+			dev_info(&cdadev->dev, "Restore resource %d flag: %lx\n", i, cdadev->stored_flags[i]);
 		}
 	}
 
@@ -541,10 +541,10 @@ int cda_open_bars(struct cda_dev *cdadev)
 		if( bars & (1 << i) ) {
 			res_child = cdadev->pcidev->resource[i].child;
 			cdadev->stored_flags[i] = res_child->flags;
-			printk("Store resource %d flag: 0x%lx\n", i, res_child->flags);
+			dev_info(&cdadev->dev, "Store resource %d flag: 0x%lx\n", i, res_child->flags);
 			if( IORESOURCE_BUSY & res_child->flags ) {
 				res_child->flags &= ~IORESOURCE_BUSY;
-				//printk("Drop busy bit for resource %d", i);
+				dev_dbg(&cdadev->dev, "Drop busy bit for resource %d", i);
 			}
 		}
 	}
@@ -558,7 +558,7 @@ void cda_release_bars(struct cda_dev *cdadev)
 	for( i = 0; i < PCI_ROM_RESOURCE; i++ ) {
 		if( bars & (1 << i) ) {
 			cdadev->pcidev->resource[i].child->flags = cdadev->stored_flags[i];
-			printk("Restore resource %d flag: %lx\n", i, cdadev->stored_flags[i]);
+			dev_info(&cdadev->dev, "Restore resource %d flag: %lx\n", i, cdadev->stored_flags[i]);
 		}
 	}
 }
