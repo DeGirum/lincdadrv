@@ -1,3 +1,9 @@
+cdapci-dkms (0.5.0.3) jammy; urgency=medium
+
+  * repo level gpg key
+
+ -- Alexander Bolotov <bolotov@degirum.com>  Tue, 09 Jul 2024 01:25:03 +0000
+
 cdapci-dkms (0.5.0.1) jammy; urgency=medium
 
   * Updated versioning scheme.
