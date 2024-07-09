@@ -25,8 +25,8 @@ jobs:
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v5
         with:
-          gpg_private_key: ${{ secrets.DRIVER_GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.DRIVER_GPG_PASSPHRASE }}
+          gpg_private_key: ${{ secrets.REPO_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.REPO_GPG_PASSPHRASE }}
       - name: Retrieve package version
         run: |
           echo "VERSION=$(grep "^MODULE_VERSION" src/cdadrv.c | cut -c 17-23)" >> "$GITHUB_OUTPUT"
