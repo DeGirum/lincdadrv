@@ -32,7 +32,7 @@ struct cda_dev {
 
 	struct pci_dev *pcidev;
 	unsigned long stored_flags[PCI_ROM_RESOURCE];
-	
+
 	struct mutex ilock;
 	struct cda_interrupts *ints;
 

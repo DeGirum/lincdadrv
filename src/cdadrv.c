@@ -58,7 +58,7 @@ static struct pci_device_id cda_pci_ids[] = {
 	{ PCI_DEVICE(0x1f0d, 0x8101) },
 	{ PCI_DEVICE(0x1f0d, 0x0101) },
 	{ PCI_DEVICE(0x10ee, 0x8011) },
-	{ PCI_DEVICE(0, 0) }, 
+	{ PCI_DEVICE(0, 0) },
 	{ PCI_DEVICE(0, 0) },
 };
 
@@ -113,7 +113,7 @@ static int cdadev_init(struct cda_dev *cdadev)
 
 	dev->class = &cda_class;
 	dev->parent = &cdadev->pcidev->dev;
-	
+
 	cdadev->dummy_blk = kzalloc(sizeof(*cdadev->dummy_blk), in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
 	if (!cdadev->dummy_blk) {
 		dev_err(&cdadev->pcidev->dev, "Can't alloc dummy blk\n");
@@ -198,7 +198,7 @@ static int cda_cdev_init(struct cda_dev *cdadev)
     return 0;
 }
 
-static int cda_pci_probe(struct pci_dev *pcidev, 
+static int cda_pci_probe(struct pci_dev *pcidev,
                         const struct pci_device_id *id)
 {
 	int ret;
@@ -209,11 +209,11 @@ static int cda_pci_probe(struct pci_dev *pcidev,
 
 	cdadev->pcidev = pcidev;
 	ret = cdadev_init(cdadev);
-	if( ret ) 
+	if( ret )
 		goto err_cdadev_init;
 
 	ret = cda_pci_init(pcidev);
-	if( ret ) 
+	if( ret )
 		goto err_pci_init;
 
 	ret = cda_mems_create(cdadev);
@@ -276,7 +276,7 @@ static void cda_pci_remove(struct pci_dev *pcidev)
 static int cda_cdev_open(struct inode *ino, struct file *file)
 {
 	int ret;
-	struct cda_dev *cdadev = 
+	struct cda_dev *cdadev =
 		container_of(ino->i_cdev,
 		struct cda_dev,
 		cdev);
@@ -330,13 +330,13 @@ static long cda_cdev_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 	case CDA_FREE_INT:
 		return cda_free_irqs(cdadev, (void *)file);
 
-	case CDA_REQ_INT: 
+	case CDA_REQ_INT:
 		return cda_req_int(cdadev, (void *)file, (void __user *) arg);
 
 	case CDA_INT_CANCEL:
 		return cda_cancel_req(cdadev, (void *)file);
 
-	case CDA_SEM_AQ: 
+	case CDA_SEM_AQ:
 		return cda_sem_aq(cdadev, (void *)file, (void __user *) arg);
 
 	case CDA_SEM_REL:
@@ -391,8 +391,8 @@ err_alloc_cdev_reg:
 }
 
 static void __exit dcadrv_exit(void)
-{	
-	if( test_probe ) { 
+{
+	if( test_probe ) {
 		printk("Stop test run. Nothing initialized\n");
 		return;
 	}

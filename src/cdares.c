@@ -45,7 +45,7 @@ struct cda_bar {
 	struct bin_attribute mmap_attr;
 };
 #else
-#if defined __has_attribute 
+#if defined __has_attribute
 # if __has_attribute (__fallthrough__)
 #  define fallthrough                    __attribute__((__fallthrough__))
 # endif
@@ -148,8 +148,8 @@ int cda_init_interrupts(struct cda_dev *cdadev, void *owner, void __user *ureq)
 	for( i = 0; i < ints->num; i++ ) {
 		char name[10];
 		vec = &ints->vecs[i];
-		vec->irq = ints->type == MSIX ? 
-					cdadev->ints->msix_entries[i].vector : 
+		vec->irq = ints->type == MSIX ?
+					cdadev->ints->msix_entries[i].vector :
 					cdadev->pcidev->irq + i;
 		snprintf(name, sizeof(name), "cda%02d-%x", cdadev->minor, i);
 		init_waitqueue_head(&vec->wait);
@@ -412,8 +412,8 @@ static const struct vm_operations_struct pci_phys_vm_ops = {
 #endif
 };
 
-static int bar_mmap( struct file *file, 
-						struct kobject *kobj, 
+static int bar_mmap( struct file *file,
+						struct kobject *kobj,
 						struct bin_attribute *attr,
 			   			struct vm_area_struct *vma)
 {
@@ -458,7 +458,7 @@ int cda_open_bars(struct cda_dev *cdadev)
 
 		if( !(pci_resource_flags(cdadev->pcidev, i) & IORESOURCE_MEM) )
 			continue;
-		
+
 		ret = -ENOMEM;
 		bar = kzalloc(sizeof(*bar), GFP_KERNEL);
 		if (!bar)

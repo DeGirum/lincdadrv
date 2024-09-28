@@ -2,10 +2,10 @@
 // Copyright(c) 2020 Egor Pomozov.
 //
 // Originally memalloc sequence was designed for simple driver
-// in Aquantia Corp by Vadim Solomin 
+// in Aquantia Corp by Vadim Solomin
 // Later was updated by QA team in Aquantia Corp.
 // Later it was additionally modifyied by Egor Pomozov
-// 
+//
 // CDA linux driver memory request handler
 //
 // This program is free software; you can redistribute it and/or modify it
@@ -173,7 +173,7 @@ static struct attribute_group cda_attr_grp = {
 };
 
 static ssize_t mblk_attr_show(
-	struct kobject *kobj, 
+	struct kobject *kobj,
 	struct attribute *attr,
 	char *buf);
 
@@ -263,7 +263,7 @@ struct kobj_type mblk_type = {
 	.release = mblk_release,
 };
 
-static ssize_t mblk_attr_show(struct kobject *kobj, 
+static ssize_t mblk_attr_show(struct kobject *kobj,
 	struct attribute *attr, char *buf)
 {
 	struct cda_mblk *mblk = container_of(kobj, struct cda_mblk, kobj);
@@ -343,7 +343,7 @@ static struct attribute *memmap_attrs[] = {
 ATTRIBUTE_GROUPS(memmap);
 #endif
 
-static ssize_t memmap_attr_show(struct kobject *kobj, 
+static ssize_t memmap_attr_show(struct kobject *kobj,
 	struct attribute *attr, char *buf)
 {
 	struct cda_mmap *memmap = to_memmap(kobj);
@@ -376,8 +376,8 @@ struct kobj_type memmap_type = {
 	.release = memmap_release,
 };
 
-static int mblk_mmap( struct file *file, 
-						struct kobject *kobj, 
+static int mblk_mmap( struct file *file,
+						struct kobject *kobj,
 						struct bin_attribute *attr,
 			   			struct vm_area_struct *vma)
 {
@@ -505,9 +505,9 @@ int cda_alloc_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	mblk->index = req.index = idx = ret;
 
 	mblk->vaddr = dma_alloc_coherent(
-		&dev->pcidev->dev, 
-		req.size, 
-		&mblk->paddr, 
+		&dev->pcidev->dev,
+		req.size,
+		&mblk->paddr,
 		in_atomic() ? GFP_ATOMIC | GFP_KERNEL : GFP_KERNEL);
 	if (!mblk->vaddr) {
 		dev_err(&dev->dev, "Can't alloc DMA memory (size %u)", req.size);
@@ -617,7 +617,7 @@ void cda_free_dev_mem(struct cda_dev *dev, void *owner)
 }
 
 static void cda_release_map(struct cda_mmap *memmap)
-{	
+{
 	dma_unmap_sg(memmap->dev->pcidev == NULL ? NULL : &memmap->dev->pcidev->dev, memmap->sgt.sgl, memmap->sgt.orig_nents, DMA_BIDIRECTIONAL);
 	unpin_user_pages_dirty_lock(memmap->pages, memmap->blk_cnt, 1);
 	memmap->mapped_blk_cnt = 0;
@@ -675,7 +675,7 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	req_vaddr = (void __user *)req.vaddr;
 	offset = offset_in_page(req_vaddr);
 	npages = DIV_ROUND_UP(offset + req.size, PAGE_SIZE);
-	memmap = kzalloc(sizeof(*memmap) + npages * (sizeof(struct cda_drv_sg_item) + sizeof(struct page *)), 
+	memmap = kzalloc(sizeof(*memmap) + npages * (sizeof(struct cda_drv_sg_item) + sizeof(struct page *)),
 		in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
 	if (!memmap) {
 		dev_err(&dev->dev, "Can't alloc memmap\n");
@@ -685,7 +685,7 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	memmap->sg_list = (struct cda_drv_sg_item *)((void *)memmap + sizeof(*memmap));
 	memmap->pages = (struct page **)((void *)memmap + sizeof(*memmap) + npages * (sizeof(struct cda_drv_sg_item)));
 
-	if (sg_alloc_table(&memmap->sgt, npages, 
+	if (sg_alloc_table(&memmap->sgt, npages,
 		in_atomic() ? GFP_ATOMIC :GFP_KERNEL)) {
 		dev_err(&dev->dev, "Can't alloc sg table\n");
 		goto out;
@@ -706,7 +706,7 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	if (ret < 0)
 		goto err_idr;
 	memmap->index = req.index = idx = ret;
-	
+
 	ret = pin_user_pages_fast((ulong)req_vaddr, npages,
 					FOLL_WRITE, memmap->pages);
 	if ( ret < 0 ) {
@@ -751,7 +751,7 @@ err_copy_to_user:
 err_publish:
 	cda_release_map(memmap);
 err_dma_alloc:
-	unpin_user_pages_dirty_lock(memmap->pages, memmap->blk_cnt, 1);	
+	unpin_user_pages_dirty_lock(memmap->pages, memmap->blk_cnt, 1);
 err_pin:
 	spin_lock(&dev->mblk_sl);
 	idr_remove(&dev->mblk_idr, idx);
