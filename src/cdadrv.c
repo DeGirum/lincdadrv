@@ -61,9 +61,10 @@ static struct pci_device_id cda_pci_ids[] = {
 	{ PCI_DEVICE(0x1f0d, 0x8101) },
 	{ PCI_DEVICE(0x1f0d, 0x0101) },
 	{ PCI_DEVICE(0x10ee, 0x8011) },
-	{ PCI_DEVICE(0, 0) },
-	{ PCI_DEVICE(0, 0) },
+	{ /* placeholder */ },
+	{ }
 };
+MODULE_DEVICE_TABLE(pci, cda_pci_ids);
 
 static struct pci_driver cda_pci = {
 	.name = cda_name,
@@ -379,7 +380,7 @@ static int __init cdadrv_init(void)
 		goto err_cls_reg;
 
 	if ((req_pci_did || req_pci_vid) && pci_id_table_size >= 2) {
-		// Last table element is 0,0
+		// Last table element is all-zero
 		// Update pre-last item
 		cda_pci_ids[pci_id_table_size-2].vendor = req_pci_vid;
 		cda_pci_ids[pci_id_table_size-2].device = req_pci_did;
