@@ -377,9 +377,9 @@ struct kobj_type memmap_type = {
 };
 
 static int mblk_mmap(struct file *file,
-						struct kobject *kobj,
-						struct bin_attribute *attr,
-			   			struct vm_area_struct *vma)
+		     struct kobject *kobj,
+		     struct bin_attribute *attr,
+		     struct vm_area_struct *vma)
 {
 	struct cda_mblk *mblk = attr->private;
 	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
@@ -389,11 +389,10 @@ static int mblk_mmap(struct file *file,
 		return -EINVAL;
 
 	if (dma_mmap_coherent(&mblk->dev->pcidev->dev,
-							vma,
-							mblk->vaddr,
-							mblk->paddr,
-							mblk->req_size))
-	{
+			      vma,
+			      mblk->vaddr,
+			      mblk->paddr,
+			      mblk->req_size)) {
 		dev_err(&mblk->dev->pcidev->dev, "DMA remapping failed");
 		return -ENXIO;
 	}

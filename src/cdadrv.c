@@ -47,7 +47,7 @@ MODULE_PARM_DESC(test_probe, "Check permissions to load driver");
 static void cdadev_release(struct device *kdev);
 static void cda_pci_remove(struct pci_dev *pcidev);
 static int cda_pci_probe(struct pci_dev *pcidev,
-			       const struct pci_device_id *id);
+			 const struct pci_device_id *id);
 
 static int cda_cdev_open(struct inode *ino, struct file *file);
 static int cda_cdev_release(struct inode *ino, struct file *file);
@@ -63,18 +63,17 @@ static struct pci_device_id cda_pci_ids[] = {
 };
 
 static struct pci_driver cda_pci = {
-    .name = cda_name,
-    .probe = cda_pci_probe,
-    .remove = cda_pci_remove,
-    .id_table = cda_pci_ids,
+	.name = cda_name,
+	.probe = cda_pci_probe,
+	.remove = cda_pci_remove,
+	.id_table = cda_pci_ids,
 };
 
 static struct file_operations cda_fileops = {
 	.owner = THIS_MODULE,
 	.open = cda_cdev_open,
 	.release = cda_cdev_release,
-    .unlocked_ioctl = cda_cdev_ioctl,
-
+	.unlocked_ioctl = cda_cdev_ioctl,
 };
 
 static struct class cda_class = {
@@ -106,7 +105,7 @@ static void cdadev_free(struct cda_dev *cdadev)
 
 static int cdadev_init(struct cda_dev *cdadev)
 {
-    // Create and initialize device structures
+	// Create and initialize device structures
 	int ret = -ENOMEM;
 	struct device *dev = &cdadev->dev;
 	device_initialize(dev);
@@ -155,7 +154,7 @@ alloc_dummy:
 
 static int cda_pci_init(struct pci_dev *pcidev)
 {
-    // PCI initialization
+	// PCI initialization
 	int ret;
 	ret = pci_enable_device_mem(pcidev);
 	if (ret) {
@@ -195,11 +194,11 @@ static int cda_cdev_init(struct cda_dev *cdadev)
 	ret = cdev_add(cdev, MKDEV(MAJOR(cdadev_first), cdadev->minor), CDA_DEV_MINOR_MAX);
 	if (ret)
 		return ret;
-    return 0;
+	return 0;
 }
 
 static int cda_pci_probe(struct pci_dev *pcidev,
-                        const struct pci_device_id *id)
+			 const struct pci_device_id *id)
 {
 	int ret;
 	struct cda_dev *cdadev = kzalloc(sizeof(*cdadev), in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
@@ -264,8 +263,8 @@ static void cda_pci_remove(struct pci_dev *pcidev)
 	cda_mems_release(cdadev);
 
 	cda_free_irqs(cdadev, NULL);
-    cda_unmmap_dev_mem(cdadev, NULL);
-    cda_free_dev_mem(cdadev, NULL);
+	cda_unmmap_dev_mem(cdadev, NULL);
+	cda_free_dev_mem(cdadev, NULL);
 
 	pci_release_regions(pcidev);
 	pci_disable_device(pcidev);
@@ -299,9 +298,9 @@ static int cda_cdev_release(struct inode *ino, struct file *file)
 
 	cda_cancel_req(cdadev, (void *)file);
 	cda_free_irqs(cdadev, (void *)file);
-    cda_unmmap_dev_mem(cdadev, (void *)file);
-    cda_free_dev_mem(cdadev, (void *)file);
-    cda_sem_rel_by_owner(cdadev, (void *)file);
+	cda_unmmap_dev_mem(cdadev, (void *)file);
+	cda_free_dev_mem(cdadev, (void *)file);
+	cda_sem_rel_by_owner(cdadev, (void *)file);
 
 	put_device(&cdadev->dev);
 	return 0;
@@ -355,7 +354,7 @@ static void cdadev_release(struct device *dev)
 
 static int __init cdadrv_init(void)
 {
-    int ret;
+	int ret;
 	size_t pci_id_table_size = ARRAY_SIZE(cda_pci_ids);
 	if (test_probe) {
 		printk("Test run. Nothing initialized\n");
@@ -396,7 +395,7 @@ static void __exit dcadrv_exit(void)
 		printk("Stop test run. Nothing initialized\n");
 		return;
 	}
-    pci_unregister_driver(&cda_pci);
+	pci_unregister_driver(&cda_pci);
 	class_unregister(&cda_class);
 	unregister_chrdev_region(cdadev_first, CDA_DEV_MINOR_MAX);
 }

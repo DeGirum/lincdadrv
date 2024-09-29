@@ -46,9 +46,9 @@ struct cda_req_int {
 };
 
 enum int_type {
-    LEGACY_INTERRUPT = 0,
-    MSI = 1,
-    MSIX = 2
+	LEGACY_INTERRUPT = 0,
+	MSI = 1,
+	MSIX = 2
 };
 
 struct cda_int_lock {

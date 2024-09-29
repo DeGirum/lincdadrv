@@ -251,8 +251,7 @@ int cda_req_int(struct cda_dev *cdadev, void *owner, void __user *ureq)
 
 	timeout = nsecs_to_jiffies(req.timeout);
 	count = atomic_xchg(&vec->count, 0);
-	if (!count)
-	{
+	if (!count) {
 		vec->busy = true;
 		mutex_unlock(&cdadev->ilock);
 		timeout = wait_event_interruptible_timeout(vec->wait,
@@ -413,9 +412,9 @@ static const struct vm_operations_struct pci_phys_vm_ops = {
 };
 
 static int bar_mmap(struct file *file,
-						struct kobject *kobj,
-						struct bin_attribute *attr,
-			   			struct vm_area_struct *vma)
+		    struct kobject *kobj,
+		    struct bin_attribute *attr,
+		    struct vm_area_struct *vma)
 {
 	struct cda_bar *bar = attr->private;
 	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
@@ -434,8 +433,8 @@ static int bar_mmap(struct file *file,
 	vma->vm_ops = &pci_phys_vm_ops;
 
 	return io_remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
-									vma->vm_end - vma->vm_start,
-									vma->vm_page_prot);
+				  vma->vm_end - vma->vm_start,
+				  vma->vm_page_prot);
 }
 
 int cda_open_bars(struct cda_dev *cdadev)

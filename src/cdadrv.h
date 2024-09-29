@@ -24,8 +24,8 @@ struct cda_dummy_blk {
 };
 
 struct cda_dev {
-    struct cdev cdev;
-    struct device dev;
+	struct cdev cdev;
+	struct device dev;
 
 	int minor;
 	struct list_head devices;
