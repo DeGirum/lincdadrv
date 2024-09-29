@@ -61,7 +61,6 @@ static struct pci_device_id cda_pci_ids[] = {
 	{ PCI_DEVICE(0x1f0d, 0x8101) },
 	{ PCI_DEVICE(0x1f0d, 0x0101) },
 	{ PCI_DEVICE(0x10ee, 0x8011) },
-	{ /* placeholder */ },
 	{ }
 };
 MODULE_DEVICE_TABLE(pci, cda_pci_ids);
@@ -364,7 +363,6 @@ static void cdadev_release(struct device *dev)
 static int __init cdadrv_init(void)
 {
 	int ret;
-	size_t pci_id_table_size = ARRAY_SIZE(cda_pci_ids);
 
 	if (test_probe) {
 		pr_info("Test run. Nothing initialized\n");
@@ -379,15 +377,18 @@ static int __init cdadrv_init(void)
 	if (ret)
 		goto err_cls_reg;
 
-	if ((req_pci_did || req_pci_vid) && pci_id_table_size >= 2) {
-		// Last table element is all-zero
-		// Update pre-last item
-		cda_pci_ids[pci_id_table_size-2].vendor = req_pci_vid;
-		cda_pci_ids[pci_id_table_size-2].device = req_pci_did;
-	}
 	ret = pci_register_driver(&cda_pci);
 	if (ret)
 		goto err_pci_reg_drv;
+
+	if (req_pci_did || req_pci_vid) {
+		ret = pci_add_dynid(&cda_pci, req_pci_vid, req_pci_did,
+				    PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0);
+		if (ret)
+			pr_warn("failed to add dynamic ID [%04x:%04x]\n", req_pci_vid, req_pci_did);
+		else
+			pr_info("add [%04x:%04x]\n", req_pci_vid, req_pci_did);
+	}
 
 	return 0;
 
