@@ -43,7 +43,7 @@ struct cda_dev {
 	struct list_head mem_blocks;
 	struct list_head mem_maps;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 	// Security kernel lock needs w/a to access BARs
 	struct kobject *kobj_bars;
 	struct cda_bar *sysfs_bar[PCI_ROM_RESOURCE]; // 6 BARs excl. ROM

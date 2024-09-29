@@ -24,7 +24,7 @@
 #include <linux/version.h>
 
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5,6,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 6, 0)
 /**
  * pin_user_pages_fast() - pin user pages in memory without taking locks
  *
@@ -246,7 +246,7 @@ static struct attribute *mblk_attrs[] = {
 	NULL,
 };
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,18,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 ATTRIBUTE_GROUPS(mblk);
 #endif
 static const struct sysfs_ops mblk_ops = {
@@ -254,7 +254,7 @@ static const struct sysfs_ops mblk_ops = {
 };
 
 struct kobj_type mblk_type = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,18,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 	.default_groups = mblk_groups,
 #else
 	.default_attrs = mblk_attrs,
@@ -339,7 +339,7 @@ static struct attribute *memmap_attrs[] = {
 	NULL,
 };
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,18,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 ATTRIBUTE_GROUPS(memmap);
 #endif
 
@@ -367,7 +367,7 @@ static const struct sysfs_ops memmap_ops = {
 };
 
 struct kobj_type memmap_type = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,18,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 	.default_groups = memmap_groups,
 #else
 	.default_attrs = memmap_attrs,

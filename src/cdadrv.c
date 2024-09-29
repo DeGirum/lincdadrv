@@ -21,7 +21,7 @@ MODULE_LICENSE("GPL");
 MODULE_VERSION("0.5.0.3");
 // The version has to be in the format n.n.n.n, where each n is a single digit
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 9, 0)
 #error Too old kernel
 #endif
 

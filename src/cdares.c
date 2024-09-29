@@ -33,7 +33,7 @@ struct cda_interrupts {
 	struct msix_entry *msix_entries;
 };
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 struct cda_bar {
 	struct kobject kobj;
 	/* struct resource *res; */
@@ -121,7 +121,7 @@ int cda_init_interrupts(struct cda_dev *cdadev, void *owner, void __user *ureq)
 		dev_warn(&cdadev->pcidev->dev, "No MSI-X vectors, try MSI. Error %x\n", ret);
 		fallthrough;
 	case MSI:
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,10,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 		nvecs = pci_alloc_irq_vectors(cdadev->pcidev, 1, req.vectors, PCI_IRQ_MSI);
 #else
 		nvecs = pci_alloc_irq_vectors_affinity(cdadev->pcidev, 1, req.vectors, PCI_IRQ_MSI, NULL);
@@ -338,7 +338,7 @@ void cda_sem_rel_by_owner(struct cda_dev *dev, void *owner)
 	mutex_unlock(&dev->ilock);
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 #define to_bar(obj) container_of((obj), struct cda_bar, kobj)
 struct bar_sysfs_entry {
 	struct attribute attr;
@@ -391,14 +391,14 @@ static struct attribute *bar_attrs[] = {
 	NULL,
 };
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,18,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 ATTRIBUTE_GROUPS(bar);
 #endif
 
 static struct kobj_type bar_type = {
 	.sysfs_ops = &bar_ops,
 	.release = bar_release,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,18,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 	.default_groups = bar_groups,
 #else
 	.default_attrs = bar_attrs,
@@ -529,7 +529,7 @@ void cda_release_bars(struct cda_dev *cdadev)
 	kobject_del(cdadev->kobj_bars);
 	kobject_put(cdadev->kobj_bars);
 }
-#else // LINUX_VERSION_CODE < KERNEL_VERSION(5,4,0)
+#else // LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0)
 int cda_open_bars(struct cda_dev *cdadev)
 {
 	int i;
