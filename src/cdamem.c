@@ -761,9 +761,7 @@ err_idr:
 	kobject_put(&memmap->kobj);
 out:
 	if (memmap) {
-		if (memmap->pages) {
-			kfree(memmap->pages);
-		}
+		kfree(memmap->pages);
 		kfree(memmap);
 	}
 	return ret;
