@@ -121,7 +121,7 @@ static int cdadev_init(struct cda_dev *cdadev)
 	}
 	idr_init(&cdadev->mblk_idr);
 	ret = ida_simple_get(&cdaminor_ida, 0, CDA_DEV_MINOR_MAX, GFP_KERNEL);
-	if( ret < 0 )
+	if (ret < 0)
 		goto err_minor_get;
 
 	cdadev->minor = ret;
@@ -158,19 +158,19 @@ static int cda_pci_init(struct pci_dev *pcidev)
     // PCI initialization
 	int ret;
 	ret = pci_enable_device_mem(pcidev);
-	if( ret ) {
+	if (ret) {
 		dev_err(&pcidev->dev, "Cannot enable PCI device mem\n");
 		goto err_en_devmem;
 	}
 
-	if( dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(64)) &&
-		(ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(32))) ) {
+	if (dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(64)) &&
+		(ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(32)))) {
 		dev_err(&pcidev->dev, "Set DMA mask 32/64 failed: 0x%x\n", ret);
 		goto err_dma_set_mask;
 	}
 
 	ret = pci_request_regions(pcidev, cda_name);
-	if( ret ) {
+	if (ret) {
 		dev_err(&pcidev->dev, "Fail request regions: 0x%x\n", ret);
 		goto err_req_regions;
 	}
@@ -209,23 +209,23 @@ static int cda_pci_probe(struct pci_dev *pcidev,
 
 	cdadev->pcidev = pcidev;
 	ret = cdadev_init(cdadev);
-	if( ret )
+	if (ret)
 		goto err_cdadev_init;
 
 	ret = cda_pci_init(pcidev);
-	if( ret )
+	if (ret)
 		goto err_pci_init;
 
 	ret = cda_mems_create(cdadev);
-	if( ret )
+	if (ret)
 		goto err_sysfsmem;
 
 	ret = cda_open_bars(cdadev);
-	if( ret )
+	if (ret)
 		goto err_check_bar;
 
 	ret = cda_cdev_init(cdadev);
-	if( ret )
+	if (ret)
 		goto err_cdev_init;
 
 	spin_lock(&cdadevlist_sl);
@@ -357,27 +357,27 @@ static int __init cdadrv_init(void)
 {
     int ret;
 	size_t pci_id_table_size = ARRAY_SIZE(cda_pci_ids);
-	if( test_probe ) {
+	if (test_probe) {
 		printk("Test run. Nothing initialized\n");
 		return 0;
 	}
 
 	ret = alloc_chrdev_region(&cdadev_first, 0, CDA_DEV_MINOR_MAX, cda_name);
-	if( ret )
+	if (ret)
 		goto err_alloc_cdev_reg;
 
 	ret = class_register(&cda_class);
-	if( ret )
+	if (ret)
 		goto err_cls_reg;
 
-	if( (req_pci_did || req_pci_vid) && pci_id_table_size >= 2 ) {
+	if ((req_pci_did || req_pci_vid) && pci_id_table_size >= 2) {
 		// Last table element is 0,0
 		// Update pre-last item
 		cda_pci_ids[pci_id_table_size-2].vendor = req_pci_vid;
 		cda_pci_ids[pci_id_table_size-2].device = req_pci_did;
 	}
 	ret = pci_register_driver(&cda_pci);
-	if( ret )
+	if (ret)
         goto err_pci_reg_drv;
 
 	return 0;
@@ -392,7 +392,7 @@ err_alloc_cdev_reg:
 
 static void __exit dcadrv_exit(void)
 {
-	if( test_probe ) {
+	if (test_probe) {
 		printk("Stop test run. Nothing initialized\n");
 		return;
 	}

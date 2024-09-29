@@ -46,7 +46,7 @@ struct cda_bar {
 };
 #else
 #if defined __has_attribute
-# if __has_attribute (__fallthrough__)
+# if __has_attribute(__fallthrough__)
 #  define fallthrough                    __attribute__((__fallthrough__))
 # endif
 #else
@@ -59,7 +59,7 @@ static int cda_alloc_msix(struct cda_dev *cdadev, uint32_t rvecs, struct cda_int
 	int i, ret;
 	struct msix_entry *entries;
 	entries = kcalloc(rvecs, sizeof(struct msix_entry), GFP_KERNEL);
-	if( !entries ) {
+	if (!entries) {
 		return -ENOMEM;
 	}
 
@@ -69,7 +69,7 @@ static int cda_alloc_msix(struct cda_dev *cdadev, uint32_t rvecs, struct cda_int
 	}
 
 	ret = pci_enable_msix_exact(cdadev->pcidev, entries, rvecs);
-	if( !ret ) {
+	if (!ret) {
 		ints->num = rvecs;
 		ints->msix_entries = entries;
 		ints->type = MSIX;
@@ -95,26 +95,26 @@ int cda_init_interrupts(struct cda_dev *cdadev, void *owner, void __user *ureq)
 	struct cda_int_lock req;
 	struct cda_interrupts *ints;
 
-	if( cdadev->ints ) {
+	if (cdadev->ints) {
 		dev_dbg(&cdadev->pcidev->dev, "Interrupts are already attached");
 		return -EINVAL; // Already attached
 	}
-	if( copy_from_user(&req, (void __user *)ureq, sizeof(req)) )
+	if (copy_from_user(&req, (void __user *)ureq, sizeof(req)))
 		return -EFAULT;
 
 	ints = kcalloc(1, sizeof(struct cda_interrupts), GFP_KERNEL);
-	if( !ints )
+	if (!ints)
 		return -ENOMEM;
 
 	ints->owner = owner;
-	switch( req.inttype ) {
+	switch (req.inttype) {
 	case MSIX:
 		ret = cda_alloc_msix(cdadev, req.vectors, ints);
-		if( !ret ) {
+		if (!ret) {
 			nvecs = req.vectors;
 			break;
 		}
-		if( ret == -ENOMEM ) {
+		if (ret == -ENOMEM) {
 			kfree(ints);
 			return ret;
 		}
@@ -126,7 +126,7 @@ int cda_init_interrupts(struct cda_dev *cdadev, void *owner, void __user *ureq)
 #else
 		nvecs = pci_alloc_irq_vectors_affinity(cdadev->pcidev, 1, req.vectors, PCI_IRQ_MSI, NULL);
 #endif
-		if( nvecs > 0 ) {
+		if (nvecs > 0) {
 			ints->num = nvecs;
 			ints->type = MSI;
 			break;
@@ -140,12 +140,12 @@ int cda_init_interrupts(struct cda_dev *cdadev, void *owner, void __user *ureq)
 	}
 
 	ints->vecs = kcalloc(ints->num, sizeof(struct cda_vector), GFP_KERNEL);
-	if( !ints->vecs ) {
+	if (!ints->vecs) {
 		ret = -ENOMEM;
 		goto err_alloc_vecs;
 	}
 
-	for( i = 0; i < ints->num; i++ ) {
+	for (i = 0; i < ints->num; i++) {
 		char name[10];
 		vec = &ints->vecs[i];
 		vec->irq = ints->type == MSIX ?
@@ -155,26 +155,26 @@ int cda_init_interrupts(struct cda_dev *cdadev, void *owner, void __user *ureq)
 		init_waitqueue_head(&vec->wait);
 		atomic_set(&vec->count, 0);
 		ret = request_irq(vec->irq, cda_isr, ints->type == LEGACY_INTERRUPT ? IRQF_SHARED : 0, name, vec);
-		if( ret ) {
+		if (ret) {
 			dev_err(&cdadev->pcidev->dev, "request_irq failed for vector %d: %d", i, ret);
 			break;
 		}
 	}
 
 	// Return interrupt type and vector count to user
-	if( !ret ) {
+	if (!ret) {
 		req.inttype = ints->type;
 		req.vectors = ints->num;
-		if( copy_to_user(ureq, &req, sizeof(req)) )
+		if (copy_to_user(ureq, &req, sizeof(req)))
 			ret = -EFAULT;
 	}
 
-	if( !ret ) {
+	if (!ret) {
 		cdadev->ints = ints;
 		return ret;
 	}
 	// Fail. Release
-	for( i -= 1; i >= 0; i-- ) {
+	for (i -= 1; i >= 0; i--) {
 		struct cda_vector *vec = &ints->vecs[i];
 		free_irq(vec->irq, vec);
 	}
@@ -192,9 +192,9 @@ int cda_free_irqs(struct cda_dev *cdadev, void *owner)
 {
 	int i;
 	struct cda_interrupts *ints;
-	if( cdadev->ints == NULL )
+	if (cdadev->ints == NULL)
 		return -EINVAL;
-	if( cdadev->ints->owner != owner ) {
+	if (cdadev->ints->owner != owner) {
 		dev_dbg(&cdadev->pcidev->dev, "Interrupts are not owned by %p", owner);
 		return -EINVAL;
 	}
@@ -202,10 +202,10 @@ int cda_free_irqs(struct cda_dev *cdadev, void *owner)
 	ints = cdadev->ints;
 	cdadev->ints = NULL;
 	mutex_unlock(&cdadev->ilock);
-	if( ints && ints->num > 0 ) {
-		for( i = 0; i < ints->num; i++ ) {
+	if (ints && ints->num > 0) {
+		for (i = 0; i < ints->num; i++) {
 			struct cda_vector *vec = &ints->vecs[i];
-			while( vec->busy ) {
+			while (vec->busy) {
 				wake_up(&vec->wait);
 				udelay(1);
 			}
@@ -230,17 +230,17 @@ int cda_req_int(struct cda_dev *cdadev, void *owner, void __user *ureq)
 	if (copy_from_user(&req, ureq, sizeof(req)))
 		return -EFAULT;
 
-	if( cdadev->ints == NULL )
+	if (cdadev->ints == NULL)
 		return -EINVAL;
 
-	if( cdadev->ints->owner != owner ) {
+	if (cdadev->ints->owner != owner) {
 		dev_err(&cdadev->pcidev->dev, "Interrupts are not owned by %p", owner);
 		return -EINVAL;
 	}
 
 	mutex_lock(&cdadev->ilock);
 	ints = cdadev->ints;
-	if( !ints || (req.vector > ints->num) ) {
+	if (!ints || (req.vector > ints->num)) {
 		mutex_unlock(&cdadev->ilock);
 		return -EINVAL;
 	}
@@ -251,7 +251,7 @@ int cda_req_int(struct cda_dev *cdadev, void *owner, void __user *ureq)
 
 	timeout = nsecs_to_jiffies(req.timeout);
 	count = atomic_xchg(&vec->count, 0);
-	if( !count )
+	if (!count)
 	{
 		vec->busy = true;
 		mutex_unlock(&cdadev->ilock);
@@ -270,10 +270,10 @@ int cda_cancel_req(struct cda_dev *cdadev, void *owner)
 {
 	int i;
 	struct cda_interrupts *ints;
-	if( cdadev->ints == NULL )
+	if (cdadev->ints == NULL)
 		return -EINVAL;
 
-	if( cdadev->ints->owner != owner ) {
+	if (cdadev->ints->owner != owner) {
 		dev_dbg(&cdadev->pcidev->dev, "Interrupts are not owned by %p", owner);
 		return -EINVAL;
 	}
@@ -281,7 +281,7 @@ int cda_cancel_req(struct cda_dev *cdadev, void *owner)
 	mutex_lock(&cdadev->ilock);
 	ints = cdadev->ints;
 	for (i = 0; ints && i < ints->num; i++) {
-		if( ints->vecs[i].busy )
+		if (ints->vecs[i].busy)
 			wake_up(&ints->vecs[i].wait);
 	}
 	mutex_unlock(&cdadev->ilock);
@@ -298,7 +298,7 @@ int cda_sem_aq(struct cda_dev *cdadev, void *owner, void __user *ureq)
 
 	mutex_lock(&cdadev->ilock);
 	cur_time = ktime_get_ns();
-	if( cdadev->semaphores[req.sem_id] < cur_time ) {
+	if (cdadev->semaphores[req.sem_id] < cur_time) {
 		cdadev->semaphores[req.sem_id] = cur_time + req.time_ns > cur_time ? cur_time + req.time_ns : 0xFFFFFFFFFFFFFFFFULL;
 		cdadev->sem_owner[req.sem_id] = owner;
 	} else {
@@ -314,7 +314,7 @@ int cda_sem_rel(struct cda_dev *cdadev, void *owner, void __user *ureq)
 	int req_sem;
 	if (copy_from_user(&req_sem, ureq, sizeof(req_sem)))
 		return -EFAULT;
-	if( cdadev->sem_owner[req_sem] != owner ) {
+	if (cdadev->sem_owner[req_sem] != owner) {
 		dev_warn(&cdadev->pcidev->dev, "Semaphore %d is not owned by %p", req_sem, owner);
 	} else {
 		mutex_lock(&cdadev->ilock);
@@ -329,8 +329,8 @@ void cda_sem_rel_by_owner(struct cda_dev *dev, void *owner)
 {
 	uint32_t i;
 	mutex_lock(&dev->ilock);
-	for( i = 0; i < CDA_MAX_DRV_SEMAPHORES; i++ ) {
-		if( dev->sem_owner[i] == owner ) {
+	for (i = 0; i < CDA_MAX_DRV_SEMAPHORES; i++) {
+		if (dev->sem_owner[i] == owner) {
 			dev->semaphores[i] = 0ULL;
 			dev->sem_owner[i] = NULL;
 		}
@@ -412,7 +412,7 @@ static const struct vm_operations_struct pci_phys_vm_ops = {
 #endif
 };
 
-static int bar_mmap( struct file *file,
+static int bar_mmap(struct file *file,
 						struct kobject *kobj,
 						struct bin_attribute *attr,
 			   			struct vm_area_struct *vma)
@@ -451,12 +451,12 @@ int cda_open_bars(struct cda_dev *cdadev)
 	if (!cdadev->kobj_bars)
 		goto err;
 
-	for (i = 0; bars && i < PCI_ROM_RESOURCE; bars >>= 1, i++){
+	for (i = 0; bars && i < PCI_ROM_RESOURCE; bars >>= 1, i++) {
 		struct bin_attribute *mmap_attr;
 		if (!(bars & 1))
 			continue;
 
-		if( !(pci_resource_flags(cdadev->pcidev, i) & IORESOURCE_MEM) )
+		if (!(pci_resource_flags(cdadev->pcidev, i) & IORESOURCE_MEM))
 			continue;
 
 		ret = -ENOMEM;
@@ -471,7 +471,7 @@ int cda_open_bars(struct cda_dev *cdadev)
 		cdadev->sysfs_bar[i] = bar;
 		kobject_init(&bar->kobj, &bar_type);
 
-		if( (bar->vaddr = pci_iomap(cdadev->pcidev, i, bar->len)) == NULL )
+		if ((bar->vaddr = pci_iomap(cdadev->pcidev, i, bar->len)) == NULL)
 			goto err;
 		ret = kobject_add(&bar->kobj, cdadev->kobj_bars, "mmio_bar%d", i);
 		if (ret)
@@ -510,7 +510,7 @@ void cda_release_bars(struct cda_dev *cdadev)
 {
 	int i;
 	int bars = pci_select_bars(cdadev->pcidev, IORESOURCE_MEM);
-	for( i = 0; i < PCI_ROM_RESOURCE; i++ ) {
+	for (i = 0; i < PCI_ROM_RESOURCE; i++) {
 		struct cda_bar *bar = cdadev->sysfs_bar[i];
 		if (!bar)
 			continue;
@@ -520,7 +520,7 @@ void cda_release_bars(struct cda_dev *cdadev)
 		kobject_del(&bar->kobj);
 		kobject_put(&bar->kobj);
 
-		if( bars & (1 << i) ) {
+		if (bars & (1 << i)) {
 			cdadev->pcidev->resource[i].child->flags = cdadev->stored_flags[i];
 			dev_info(&cdadev->dev, "Restore resource %d flag: %lx\n", i, cdadev->stored_flags[i]);
 		}
@@ -536,13 +536,13 @@ int cda_open_bars(struct cda_dev *cdadev)
 	struct resource *res_child;
 	int bars = pci_select_bars(cdadev->pcidev, IORESOURCE_MEM);
 
-	for( i = 0; i < PCI_ROM_RESOURCE; i++ ) {
+	for (i = 0; i < PCI_ROM_RESOURCE; i++) {
 		// Drop busy bit
-		if( bars & (1 << i) ) {
+		if (bars & (1 << i)) {
 			res_child = cdadev->pcidev->resource[i].child;
 			cdadev->stored_flags[i] = res_child->flags;
 			dev_info(&cdadev->dev, "Store resource %d flag: 0x%lx\n", i, res_child->flags);
-			if( IORESOURCE_BUSY & res_child->flags ) {
+			if (IORESOURCE_BUSY & res_child->flags) {
 				res_child->flags &= ~IORESOURCE_BUSY;
 				dev_dbg(&cdadev->dev, "Drop busy bit for resource %d", i);
 			}
@@ -555,8 +555,8 @@ void cda_release_bars(struct cda_dev *cdadev)
 {
 	int i;
 	int bars = pci_select_bars(cdadev->pcidev, IORESOURCE_MEM);
-	for( i = 0; i < PCI_ROM_RESOURCE; i++ ) {
-		if( bars & (1 << i) ) {
+	for (i = 0; i < PCI_ROM_RESOURCE; i++) {
+		if (bars & (1 << i)) {
 			cdadev->pcidev->resource[i].child->flags = cdadev->stored_flags[i];
 			dev_info(&cdadev->dev, "Restore resource %d flag: %lx\n", i, cdadev->stored_flags[i]);
 		}
