@@ -361,7 +361,7 @@ struct bar_sysfs_entry {
 		return sprintf(buf, _fmt, bar->_field);			\
 	}								\
 	static struct bar_sysfs_entry bar_##_field##_attr =		\
-		__ATTR(_field, S_IRUGO, bar_##_field##_show, NULL);
+		__ATTR(_field, S_IRUGO, bar_##_field##_show, NULL)
 
 #pragma GCC diagnostic ignored "-Wformat"
 cdadev_bar_attr(paddr, "0x%lx\n");

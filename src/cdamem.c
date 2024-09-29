@@ -226,7 +226,7 @@ struct mblkitem_sysfs_entry {
 		return sprintf(buf, _fmt, mblk->_field);		\
 	}								\
 	static struct mblkitem_sysfs_entry mblk_##_field##_attr =	\
-		__ATTR(_field, S_IRUGO, mblk_##_field##_show, NULL);
+		__ATTR(_field, S_IRUGO, mblk_##_field##_show, NULL)
 
 #pragma GCC diagnostic ignored "-Wformat"
 cda_dev_mblk_attr(vaddr, "0x%lx\n");
@@ -299,7 +299,7 @@ struct memmapitem_sysfs_entry {
 		return sprintf(buf, _fmt, memmap->_field);		\
 	}								\
 	static struct memmapitem_sysfs_entry memmap_##_field##_attr =	\
-		__ATTR(_field, S_IRUGO, memmap_##_field##_show, NULL);
+		__ATTR(_field, S_IRUGO, memmap_##_field##_show, NULL)
 
 #pragma GCC diagnostic ignored "-Wformat"
 cda_dev_memmap_attr(owner, "0x%p\n");
