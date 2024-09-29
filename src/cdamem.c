@@ -320,7 +320,7 @@ memmap_sglist_show(struct cda_mmap *memmap, char *buf)
 	for ( ; i < memmap->blk_cnt; i++) {
 		if ((res + sg_list_item_size) >= (PAGE_SIZE - 1)) /* https://lwn.net/Articles/178634/ */{
 			memmap->show_cnt = i;
-			//printk("Split SG list. Next read starts with item: %d\n", i);
+			dev_dbg(&memmap->dev->dev, "Split SG list. Next read starts with item: %d\n", i);
 			break;
 		}
 		res += sprintf(&buf[res], "%016llx %08lx\n", memmap->sg_list[i].paddr, memmap->sg_list[i].size);
