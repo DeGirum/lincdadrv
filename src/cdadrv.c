@@ -27,9 +27,9 @@ MODULE_VERSION("0.5.0.3");
 
 static dev_t cdadev_first;
 static const char cda_name[] = "cda";
-static int req_pci_did = 0;
-static int req_pci_vid = 0;
-static int test_probe = 0;
+static int req_pci_did;
+static int req_pci_vid;
+static int test_probe;
 
 #define CDA_DEV_MINOR_MAX 32
 static DEFINE_SPINLOCK(cdadevlist_sl);
