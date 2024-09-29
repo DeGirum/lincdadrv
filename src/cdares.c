@@ -60,9 +60,8 @@ static int cda_alloc_msix(struct cda_dev *cdadev, uint32_t rvecs, struct cda_int
 	struct msix_entry *entries;
 
 	entries = kcalloc(rvecs, sizeof(struct msix_entry), GFP_KERNEL);
-	if (!entries) {
+	if (!entries)
 		return -ENOMEM;
-	}
 
 	for (i = 0; i < rvecs; i++) {
 		entries[i].entry = i;
@@ -506,9 +505,8 @@ int cda_open_bars(struct cda_dev *cdadev)
 
 		dev_info(&cdadev->dev, "Store resource %d flag: 0x%lx\n", i, res_child->flags);
 		cdadev->stored_flags[i] = res_child->flags;
-		if (IORESOURCE_BUSY & res_child->flags) {
+		if (IORESOURCE_BUSY & res_child->flags)
 			res_child->flags &= ~IORESOURCE_BUSY;
-		}
 	}
 	return 0;
 

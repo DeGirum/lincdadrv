@@ -203,9 +203,8 @@ static int cda_pci_probe(struct pci_dev *pcidev,
 	int ret;
 	struct cda_dev *cdadev = kzalloc(sizeof(*cdadev), in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
 
-	if (!cdadev) {
+	if (!cdadev)
 		return -ENOMEM;
-	}
 
 	cdadev->pcidev = pcidev;
 	ret = cdadev_init(cdadev);

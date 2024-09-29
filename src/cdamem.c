@@ -563,9 +563,8 @@ int cda_free_mem_by_idx(struct cda_dev *dev, void *owner, void __user *ureq)
 	int memidx;
 	struct cda_mblk *mblk;
 
-	if (copy_from_user(&memidx, (void __user *)ureq, sizeof(memidx))) {
+	if (copy_from_user(&memidx, (void __user *)ureq, sizeof(memidx)))
 		return -EFAULT;
-	}
 
 	spin_lock(&dev->mblk_sl);
 	mblk = idr_find(&dev->mblk_idr, memidx);
