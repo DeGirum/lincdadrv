@@ -378,7 +378,7 @@ static int __init cdadrv_init(void)
 	}
 	ret = pci_register_driver(&cda_pci);
 	if (ret)
-        goto err_pci_reg_drv;
+		goto err_pci_reg_drv;
 
 	return 0;
 
