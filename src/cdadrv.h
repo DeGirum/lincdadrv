@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+/* SPDX-License-Identifier: GPL-2.0 */
 // Copyright(c) 2020 DeGirum Corp., Egor Pomozov.
 //
 // CDA linux driver mem blocks/mem maps and interrupt request handler
