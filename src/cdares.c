@@ -404,7 +404,7 @@ static struct attribute *bar_attrs[] = {
 ATTRIBUTE_GROUPS(bar);
 #endif
 
-static struct kobj_type bar_type = {
+static const struct kobj_type bar_type = {
 	.sysfs_ops = &bar_ops,
 	.release = bar_release,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)

@@ -254,7 +254,7 @@ static const struct sysfs_ops mblk_ops = {
 	.show = mblk_attr_show,
 };
 
-struct kobj_type mblk_type = {
+static const struct kobj_type mblk_type = {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 	.default_groups = mblk_groups,
 #else
@@ -370,7 +370,7 @@ static const struct sysfs_ops memmap_ops = {
 	.show = memmap_attr_show,
 };
 
-struct kobj_type memmap_type = {
+static const struct kobj_type memmap_type = {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 	.default_groups = memmap_groups,
 #else
