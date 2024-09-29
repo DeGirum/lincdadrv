@@ -115,10 +115,8 @@ static int cdadev_init(struct cda_dev *cdadev)
 	dev->parent = &cdadev->pcidev->dev;
 
 	cdadev->dummy_blk = kzalloc(sizeof(*cdadev->dummy_blk), in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
-	if (!cdadev->dummy_blk) {
-		dev_err(&cdadev->pcidev->dev, "Can't alloc dummy blk\n");
+	if (!cdadev->dummy_blk)
 		goto alloc_dummy;
-	}
 	idr_init(&cdadev->mblk_idr);
 	ret = ida_simple_get(&cdaminor_ida, 0, CDA_DEV_MINOR_MAX, GFP_KERNEL);
 	if (ret < 0)

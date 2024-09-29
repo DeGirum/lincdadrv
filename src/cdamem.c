@@ -487,10 +487,8 @@ int cda_alloc_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 		return -EFAULT;
 
 	mblk = kzalloc(sizeof(*mblk), in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
-	if (!mblk) {
-		dev_err(&dev->dev, "Can't alloc mblk\n");
+	if (!mblk)
 		goto out;
-	}
 	INIT_LIST_HEAD(&mblk->list);
 	mblk->dev = dev;
 	kobject_init(&mblk->kobj, &mblk_type);
@@ -683,10 +681,8 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	npages = DIV_ROUND_UP(offset + req.size, PAGE_SIZE);
 	memmap = kzalloc(sizeof(*memmap) + npages * (sizeof(struct cda_drv_sg_item) + sizeof(struct page *)),
 		in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
-	if (!memmap) {
-		dev_err(&dev->dev, "Can't alloc memmap\n");
+	if (!memmap)
 		goto out;
-	}
 	memmap->owner = owner;
 	memmap->sg_list = (struct cda_drv_sg_item *)((void *)memmap + sizeof(*memmap));
 	memmap->pages = (struct page **)((void *)memmap + sizeof(*memmap) + npages * (sizeof(struct cda_drv_sg_item)));
