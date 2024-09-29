@@ -686,7 +686,7 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	memmap->pages = (struct page **)((void *)memmap + sizeof(*memmap) + npages * (sizeof(struct cda_drv_sg_item)));
 
 	if (sg_alloc_table(&memmap->sgt, npages,
-		in_atomic() ? GFP_ATOMIC :GFP_KERNEL)) {
+		in_atomic() ? GFP_ATOMIC : GFP_KERNEL)) {
 		dev_err(&dev->dev, "Can't alloc sg table\n");
 		goto out;
 	}
