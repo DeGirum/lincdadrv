@@ -162,10 +162,13 @@ static int cda_pci_init(struct pci_dev *pcidev)
 		goto err_en_devmem;
 	}
 
-	if (dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(64)) &&
-		(ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(32)))) {
-		dev_err(&pcidev->dev, "Set DMA mask 32/64 failed: 0x%x\n", ret);
-		goto err_dma_set_mask;
+	ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(64));
+	if (ret) {
+		ret = dma_set_mask_and_coherent(&pcidev->dev, DMA_BIT_MASK(32));
+		if (ret) {
+			dev_err(&pcidev->dev, "Set DMA mask 32/64 failed: 0x%x\n", ret);
+			goto err_dma_set_mask;
+		}
 	}
 
 	ret = pci_request_regions(pcidev, cda_name);

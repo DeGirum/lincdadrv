@@ -481,7 +481,8 @@ int cda_open_bars(struct cda_dev *cdadev)
 		cdadev->sysfs_bar[i] = bar;
 		kobject_init(&bar->kobj, &bar_type);
 
-		if ((bar->vaddr = pci_iomap(cdadev->pcidev, i, bar->len)) == NULL)
+		bar->vaddr = pci_iomap(cdadev->pcidev, i, bar->len);
+		if (!bar->vaddr)
 			goto err;
 		ret = kobject_add(&bar->kobj, cdadev->kobj_bars, "mmio_bar%d", i);
 		if (ret)
