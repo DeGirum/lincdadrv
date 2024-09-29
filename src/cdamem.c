@@ -4,7 +4,7 @@
 // Originally memalloc sequence was designed for simple driver
 // in Aquantia Corp by Vadim Solomin
 // Later was updated by QA team in Aquantia Corp.
-// Later it was additionally modifyied by Egor Pomozov
+// Later it was additionally modified by Egor Pomozov
 //
 // CDA linux driver memory request handler
 //
