@@ -403,12 +403,7 @@ static int mblk_mmap(struct file *file,
 	return 0;
 }
 
-void cda_hide_memmap(struct cda_mmap *memmap);
-int cda_publish_memmap(struct cda_mmap *memmap);
-void cda_hide_mblk(struct cda_mblk *mblk);
-int cda_publish_mblk(struct cda_mblk *mblk);
-
-int cda_publish_mblk(struct cda_mblk *mblk)
+static int cda_publish_mblk(struct cda_mblk *mblk)
 {
 	int ret;
 	struct bin_attribute *mmap_attr = &mblk->mmap_attr;
@@ -437,13 +432,13 @@ err_add:
 }
 
 
-void cda_hide_mblk(struct cda_mblk *mblk)
+static void cda_hide_mblk(struct cda_mblk *mblk)
 {
 	sysfs_remove_bin_file(&mblk->kobj, &mblk->mmap_attr);
 	kobject_del(&mblk->kobj);
 }
 
-int cda_publish_memmap(struct cda_mmap *memmap)
+static int cda_publish_memmap(struct cda_mmap *memmap)
 {
 	int ret;
 	struct bin_attribute *mmap_attr = &memmap->mmap_attr;
@@ -470,7 +465,7 @@ err_add:
 	return ret;
 }
 
-void cda_hide_memmap(struct cda_mmap *memmap)
+static void cda_hide_memmap(struct cda_mmap *memmap)
 {
 	sysfs_remove_bin_file(&memmap->kobj, &memmap->mmap_attr);
 	kobject_del(&memmap->kobj);
