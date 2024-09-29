@@ -7,6 +7,9 @@
 // under the terms and conditions of the GNU General Public License,
 // version 2, as published by the Free Software Foundation.
 //
+
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
 #include <linux/module.h>
 #include <linux/errno.h>
 #include <linux/init.h>
@@ -363,7 +366,7 @@ static int __init cdadrv_init(void)
 	size_t pci_id_table_size = ARRAY_SIZE(cda_pci_ids);
 
 	if (test_probe) {
-		printk("Test run. Nothing initialized\n");
+		pr_info("Test run. Nothing initialized\n");
 		return 0;
 	}
 
@@ -398,7 +401,7 @@ err_alloc_cdev_reg:
 static void __exit dcadrv_exit(void)
 {
 	if (test_probe) {
-		printk("Stop test run. Nothing initialized\n");
+		pr_info("Stop test run. Nothing initialized\n");
 		return;
 	}
 	pci_unregister_driver(&cda_pci);
