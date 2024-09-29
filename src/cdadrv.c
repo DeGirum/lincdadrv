@@ -114,7 +114,7 @@ static int cdadev_init(struct cda_dev *cdadev)
 	dev->class = &cda_class;
 	dev->parent = &cdadev->pcidev->dev;
 
-	cdadev->dummy_blk = kzalloc(sizeof(*cdadev->dummy_blk), in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
+	cdadev->dummy_blk = kzalloc(sizeof(*cdadev->dummy_blk), GFP_KERNEL);
 	if (!cdadev->dummy_blk)
 		goto alloc_dummy;
 	idr_init(&cdadev->mblk_idr);
@@ -201,7 +201,7 @@ static int cda_pci_probe(struct pci_dev *pcidev,
 			 const struct pci_device_id *id)
 {
 	int ret;
-	struct cda_dev *cdadev = kzalloc(sizeof(*cdadev), in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
+	struct cda_dev *cdadev = kzalloc(sizeof(*cdadev), GFP_KERNEL);
 
 	if (!cdadev)
 		return -ENOMEM;
