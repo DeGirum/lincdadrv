@@ -22,7 +22,7 @@ struct cda_vector {
 	volatile bool busy;
 	wait_queue_head_t wait;
 	atomic_t count;
-	unsigned irq;
+	unsigned int irq;
 };
 
 struct cda_interrupts {
@@ -230,7 +230,7 @@ int cda_req_int(struct cda_dev *cdadev, void *owner, void __user *ureq)
 	struct cda_req_int req;
 	struct cda_vector *vec;
 	unsigned long timeout;
-	unsigned count;
+	unsigned int count;
 
 	if (copy_from_user(&req, ureq, sizeof(req)))
 		return -EFAULT;
