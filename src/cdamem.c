@@ -159,6 +159,7 @@ static ssize_t name_show(struct device *dev,
 					char *buf)
 {
 	struct cda_dev *cdadev = container_of((dev), struct cda_dev, dev);
+
 	return sprintf(buf, "cda%d\n", cdadev->minor);
 }
 static DEVICE_ATTR_RO(name);
@@ -279,6 +280,7 @@ static ssize_t mblk_attr_show(struct kobject *kobj,
 static void mblk_release(struct kobject *kobj)
 {
 	struct cda_mblk *mblk = container_of(kobj, struct cda_mblk, kobj);
+
 	kfree(mblk);
 }
 
@@ -312,6 +314,7 @@ memmap_sglist_show(struct cda_mmap *memmap, char *buf)
 	const int sg_list_item_size = 16 + 8 + 2; //"%016llx %08lx\n"
 	int res = 0;
 	int i = memmap->show_cnt;
+
 	memmap->show_cnt = 0;
 	buf[0] = '\0';
 	for ( ; i < memmap->blk_cnt; i++) {
@@ -359,6 +362,7 @@ static ssize_t memmap_attr_show(struct kobject *kobj,
 static void memmap_release(struct kobject *kobj)
 {
 	struct cda_mmap *memmap = to_memmap(kobj);
+
 	kfree(memmap);
 }
 
@@ -478,6 +482,7 @@ int cda_alloc_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	int idx;
 	struct cda_mblk *mblk;
 	struct cda_alloc_mem req;
+
 	if (copy_from_user(&req, ureq, sizeof(req)))
 		return -EFAULT;
 
@@ -559,6 +564,7 @@ int cda_free_mem_by_idx(struct cda_dev *dev, void *owner, void __user *ureq)
 {
 	int memidx;
 	struct cda_mblk *mblk;
+
 	if (copy_from_user(&memidx, (void __user *)ureq, sizeof(memidx))) {
 		return -EFAULT;
 	}
@@ -631,6 +637,7 @@ static int cda_perform_mapping(
 	ulong len = memmap->size;
 	void __user *buf = memmap->vaddr;
 	struct cda_drv_sg_item *cda_sg_list = memmap->sg_list;
+
 	sg = memmap->sgt.sgl;
 	for (i = 0; i < memmap->sgt.orig_nents; i++, sg = sg_next(sg)) {
 		unsigned int offset = offset_in_page(buf);
@@ -779,6 +786,7 @@ int cda_unmap_mem_by_idx(struct cda_dev *dev, void *owner, void __user *ureq)
 {
 	int memidx;
 	struct cda_mmap *memmap;
+
 	if (copy_from_user(&memidx, (void __user *)ureq, sizeof(memidx)))
 		return -EFAULT;
 
@@ -835,7 +843,9 @@ void cda_unmmap_dev_mem(struct cda_dev *dev, void *owner)
 
 int cda_mems_create(struct cda_dev *cdadev)
 {
-	int ret = sysfs_create_group(&cdadev->dev.kobj, &cda_attr_grp);
+	int ret;
+
+	ret = sysfs_create_group(&cdadev->dev.kobj, &cda_attr_grp);
 	if (ret)
 		goto err_group;
 

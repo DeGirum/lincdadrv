@@ -108,6 +108,7 @@ static int cdadev_init(struct cda_dev *cdadev)
 	// Create and initialize device structures
 	int ret = -ENOMEM;
 	struct device *dev = &cdadev->dev;
+
 	device_initialize(dev);
 
 	dev->class = &cda_class;
@@ -156,6 +157,7 @@ static int cda_pci_init(struct pci_dev *pcidev)
 {
 	// PCI initialization
 	int ret;
+
 	ret = pci_enable_device_mem(pcidev);
 	if (ret) {
 		dev_err(&pcidev->dev, "Cannot enable PCI device mem\n");
@@ -202,6 +204,7 @@ static int cda_pci_probe(struct pci_dev *pcidev,
 {
 	int ret;
 	struct cda_dev *cdadev = kzalloc(sizeof(*cdadev), in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
+
 	if (!cdadev) {
 		return -ENOMEM;
 	}
@@ -293,6 +296,7 @@ out:
 static int cda_cdev_release(struct inode *ino, struct file *file)
 {
 	struct cda_dev *cdadev = file->private_data;
+
 	if (!cdadev)
 		return -ENODEV;
 
@@ -309,8 +313,8 @@ static int cda_cdev_release(struct inode *ino, struct file *file)
 static long cda_cdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	struct cda_dev *cdadev = file->private_data;
-	switch (cmd) {
 
+	switch (cmd) {
 	case CDA_ALLOC_MEM:
 		return cda_alloc_mem(cdadev, (void *)file, (void __user *)arg);
 
@@ -349,6 +353,7 @@ static long cda_cdev_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 static void cdadev_release(struct device *dev)
 {
 	struct cda_dev *cdadev = container_of(dev, struct cda_dev, dev);
+
 	kfree(cdadev);
 }
 
@@ -356,6 +361,7 @@ static int __init cdadrv_init(void)
 {
 	int ret;
 	size_t pci_id_table_size = ARRAY_SIZE(cda_pci_ids);
+
 	if (test_probe) {
 		printk("Test run. Nothing initialized\n");
 		return 0;
