@@ -69,7 +69,7 @@ static struct pci_driver cda_pci = {
 	.id_table = cda_pci_ids,
 };
 
-static struct file_operations cda_fileops = {
+static const struct file_operations cda_fileops = {
 	.owner = THIS_MODULE,
 	.open = cda_cdev_open,
 	.release = cda_cdev_release,
