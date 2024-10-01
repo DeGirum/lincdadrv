@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+/* SPDX-License-Identifier: GPL-2.0 */
 // Copyright(c) 2020 DeGirum Corp., Egor Pomozov.
 //
 // CDA linux driver mem blocks/mem maps and interrupt request handler
@@ -24,15 +24,15 @@ struct cda_dummy_blk {
 };
 
 struct cda_dev {
-    struct cdev cdev;
-    struct device dev;
+	struct cdev cdev;
+	struct device dev;
 
 	int minor;
 	struct list_head devices;
 
 	struct pci_dev *pcidev;
 	unsigned long stored_flags[PCI_ROM_RESOURCE];
-	
+
 	struct mutex ilock;
 	struct cda_interrupts *ints;
 
@@ -43,7 +43,7 @@ struct cda_dev {
 	struct list_head mem_blocks;
 	struct list_head mem_maps;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 	// Security kernel lock needs w/a to access BARs
 	struct kobject *kobj_bars;
 	struct cda_bar *sysfs_bar[PCI_ROM_RESOURCE]; // 6 BARs excl. ROM

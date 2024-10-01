@@ -89,11 +89,6 @@ endif
 
 postinstall:
 	@sudo -E depmod
-ifneq ($(IS_SYSTEMD_USED),other)
-	@echo $(TARGET_MODULE) | sudo -E tee -i /etc/modules-load.d/cdapci.conf > /dev/null
-else
-	$(warning "No module autostart on reboot")
-endif
 ifeq ($(IS_THERE_CDA_GROUP),no)
 	$(warning "No group dg_orca. Creating it.")
 	@sudo -E groupadd $(DG_GROUP)

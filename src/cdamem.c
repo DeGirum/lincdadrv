@@ -2,10 +2,10 @@
 // Copyright(c) 2020 Egor Pomozov.
 //
 // Originally memalloc sequence was designed for simple driver
-// in Aquantia Corp by Vadim Solomin 
+// in Aquantia Corp by Vadim Solomin
 // Later was updated by QA team in Aquantia Corp.
-// Later it was additionally modifyied by Egor Pomozov
-// 
+// Later it was additionally modified by Egor Pomozov
+//
 // CDA linux driver memory request handler
 //
 // This program is free software; you can redistribute it and/or modify it
@@ -24,7 +24,7 @@
 #include <linux/version.h>
 
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5,6,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 6, 0)
 /**
  * pin_user_pages_fast() - pin user pages in memory without taking locks
  *
@@ -159,6 +159,7 @@ static ssize_t name_show(struct device *dev,
 					char *buf)
 {
 	struct cda_dev *cdadev = container_of((dev), struct cda_dev, dev);
+
 	return sprintf(buf, "cda%d\n", cdadev->minor);
 }
 static DEVICE_ATTR_RO(name);
@@ -173,7 +174,7 @@ static struct attribute_group cda_attr_grp = {
 };
 
 static ssize_t mblk_attr_show(
-	struct kobject *kobj, 
+	struct kobject *kobj,
 	struct attribute *attr,
 	char *buf);
 
@@ -225,7 +226,7 @@ struct mblkitem_sysfs_entry {
 		return sprintf(buf, _fmt, mblk->_field);		\
 	}								\
 	static struct mblkitem_sysfs_entry mblk_##_field##_attr =	\
-		__ATTR(_field, S_IRUGO, mblk_##_field##_show, NULL);
+		__ATTR(_field, S_IRUGO, mblk_##_field##_show, NULL)
 
 #pragma GCC diagnostic ignored "-Wformat"
 cda_dev_mblk_attr(vaddr, "0x%lx\n");
@@ -246,15 +247,15 @@ static struct attribute *mblk_attrs[] = {
 	NULL,
 };
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,18,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 ATTRIBUTE_GROUPS(mblk);
 #endif
 static const struct sysfs_ops mblk_ops = {
 	.show = mblk_attr_show,
 };
 
-struct kobj_type mblk_type = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,18,0)
+static const struct kobj_type mblk_type = {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 	.default_groups = mblk_groups,
 #else
 	.default_attrs = mblk_attrs,
@@ -263,7 +264,7 @@ struct kobj_type mblk_type = {
 	.release = mblk_release,
 };
 
-static ssize_t mblk_attr_show(struct kobject *kobj, 
+static ssize_t mblk_attr_show(struct kobject *kobj,
 	struct attribute *attr, char *buf)
 {
 	struct cda_mblk *mblk = container_of(kobj, struct cda_mblk, kobj);
@@ -279,6 +280,7 @@ static ssize_t mblk_attr_show(struct kobject *kobj,
 static void mblk_release(struct kobject *kobj)
 {
 	struct cda_mblk *mblk = container_of(kobj, struct cda_mblk, kobj);
+
 	kfree(mblk);
 }
 
@@ -297,7 +299,7 @@ struct memmapitem_sysfs_entry {
 		return sprintf(buf, _fmt, memmap->_field);		\
 	}								\
 	static struct memmapitem_sysfs_entry memmap_##_field##_attr =	\
-		__ATTR(_field, S_IRUGO, memmap_##_field##_show, NULL);
+		__ATTR(_field, S_IRUGO, memmap_##_field##_show, NULL)
 
 #pragma GCC diagnostic ignored "-Wformat"
 cda_dev_memmap_attr(owner, "0x%p\n");
@@ -312,12 +314,13 @@ memmap_sglist_show(struct cda_mmap *memmap, char *buf)
 	const int sg_list_item_size = 16 + 8 + 2; //"%016llx %08lx\n"
 	int res = 0;
 	int i = memmap->show_cnt;
+
 	memmap->show_cnt = 0;
 	buf[0] = '\0';
-	for( ; i < memmap->blk_cnt; i++ ) {
-		if( (res + sg_list_item_size) >= (PAGE_SIZE - 1)) /* https://lwn.net/Articles/178634/ */{
+	for ( ; i < memmap->blk_cnt; i++) {
+		if ((res + sg_list_item_size) >= (PAGE_SIZE - 1)) /* https://lwn.net/Articles/178634/ */{
 			memmap->show_cnt = i;
-			//printk("Split SG list. Next read starts with item: %d\n", i);
+			dev_dbg(&memmap->dev->dev, "Split SG list. Next read starts with item: %d\n", i);
 			break;
 		}
 		res += sprintf(&buf[res], "%016llx %08lx\n", memmap->sg_list[i].paddr, memmap->sg_list[i].size);
@@ -339,11 +342,11 @@ static struct attribute *memmap_attrs[] = {
 	NULL,
 };
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,18,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 ATTRIBUTE_GROUPS(memmap);
 #endif
 
-static ssize_t memmap_attr_show(struct kobject *kobj, 
+static ssize_t memmap_attr_show(struct kobject *kobj,
 	struct attribute *attr, char *buf)
 {
 	struct cda_mmap *memmap = to_memmap(kobj);
@@ -359,6 +362,7 @@ static ssize_t memmap_attr_show(struct kobject *kobj,
 static void memmap_release(struct kobject *kobj)
 {
 	struct cda_mmap *memmap = to_memmap(kobj);
+
 	kfree(memmap);
 }
 
@@ -366,8 +370,8 @@ static const struct sysfs_ops memmap_ops = {
 	.show = memmap_attr_show,
 };
 
-struct kobj_type memmap_type = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,18,0)
+static const struct kobj_type memmap_type = {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
 	.default_groups = memmap_groups,
 #else
 	.default_attrs = memmap_attrs,
@@ -376,10 +380,10 @@ struct kobj_type memmap_type = {
 	.release = memmap_release,
 };
 
-static int mblk_mmap( struct file *file, 
-						struct kobject *kobj, 
-						struct bin_attribute *attr,
-			   			struct vm_area_struct *vma)
+static int mblk_mmap(struct file *file,
+		     struct kobject *kobj,
+		     struct bin_attribute *attr,
+		     struct vm_area_struct *vma)
 {
 	struct cda_mblk *mblk = attr->private;
 	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
@@ -388,29 +392,23 @@ static int mblk_mmap( struct file *file,
 	if (vma->vm_pgoff + requested > pages)
 		return -EINVAL;
 
-	if( dma_mmap_coherent(  &mblk->dev->pcidev->dev,
-							vma,
-							mblk->vaddr,
-							mblk->paddr,
-							mblk->req_size) )
-	{
+	if (dma_mmap_coherent(&mblk->dev->pcidev->dev,
+			      vma,
+			      mblk->vaddr,
+			      mblk->paddr,
+			      mblk->req_size)) {
 		dev_err(&mblk->dev->pcidev->dev, "DMA remapping failed");
 		return -ENXIO;
 	}
 	return 0;
 }
 
-void cda_hide_memmap(struct cda_mmap *memmap);
-int cda_publish_memmap(struct cda_mmap *memmap);
-void cda_hide_mblk(struct cda_mblk *mblk);
-int cda_publish_mblk(struct cda_mblk *mblk);
-
-int cda_publish_mblk(struct cda_mblk *mblk)
+static int cda_publish_mblk(struct cda_mblk *mblk)
 {
 	int ret;
 	struct bin_attribute *mmap_attr = &mblk->mmap_attr;
 
-	ret = kobject_add(  &mblk->kobj, mblk->dev->kobj_mems,
+	ret = kobject_add(&mblk->kobj, mblk->dev->kobj_mems,
 						"%04d", mblk->index);
 	if (ret)
 		goto err_add;
@@ -434,18 +432,18 @@ err_add:
 }
 
 
-void cda_hide_mblk(struct cda_mblk *mblk)
+static void cda_hide_mblk(struct cda_mblk *mblk)
 {
 	sysfs_remove_bin_file(&mblk->kobj, &mblk->mmap_attr);
 	kobject_del(&mblk->kobj);
 }
 
-int cda_publish_memmap(struct cda_mmap *memmap)
+static int cda_publish_memmap(struct cda_mmap *memmap)
 {
 	int ret;
 	struct bin_attribute *mmap_attr = &memmap->mmap_attr;
 
-	ret = kobject_add(  &memmap->kobj, memmap->dev->kobj_mems,
+	ret = kobject_add(&memmap->kobj, memmap->dev->kobj_mems,
 						"%04d", memmap->index);
 	if (ret)
 		goto err_add;
@@ -467,7 +465,7 @@ err_add:
 	return ret;
 }
 
-void cda_hide_memmap(struct cda_mmap *memmap)
+static void cda_hide_memmap(struct cda_mmap *memmap)
 {
 	sysfs_remove_bin_file(&memmap->kobj, &memmap->mmap_attr);
 	kobject_del(&memmap->kobj);
@@ -479,14 +477,13 @@ int cda_alloc_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	int idx;
 	struct cda_mblk *mblk;
 	struct cda_alloc_mem req;
+
 	if (copy_from_user(&req, ureq, sizeof(req)))
 		return -EFAULT;
 
 	mblk = kzalloc(sizeof(*mblk), in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
-	if (!mblk) {
-		dev_err(&dev->dev, "Can't alloc mblk\n");
+	if (!mblk)
 		goto out;
-	}
 	INIT_LIST_HEAD(&mblk->list);
 	mblk->dev = dev;
 	kobject_init(&mblk->kobj, &mblk_type);
@@ -505,9 +502,9 @@ int cda_alloc_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	mblk->index = req.index = idx = ret;
 
 	mblk->vaddr = dma_alloc_coherent(
-		&dev->pcidev->dev, 
-		req.size, 
-		&mblk->paddr, 
+		&dev->pcidev->dev,
+		req.size,
+		&mblk->paddr,
 		in_atomic() ? GFP_ATOMIC | GFP_KERNEL : GFP_KERNEL);
 	if (!mblk->vaddr) {
 		dev_err(&dev->dev, "Can't alloc DMA memory (size %u)", req.size);
@@ -522,7 +519,7 @@ int cda_alloc_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 		goto err_publish;
 	}
 
-	if(copy_to_user(ureq, &req, sizeof(req))) {
+	if (copy_to_user(ureq, &req, sizeof(req))) {
 		ret = -EFAULT;
 		goto err_copy_to_user;
 	}
@@ -560,19 +557,19 @@ int cda_free_mem_by_idx(struct cda_dev *dev, void *owner, void __user *ureq)
 {
 	int memidx;
 	struct cda_mblk *mblk;
-	if (copy_from_user(&memidx, (void __user *)ureq, sizeof(memidx))) {
+
+	if (copy_from_user(&memidx, (void __user *)ureq, sizeof(memidx)))
 		return -EFAULT;
-	}
 
 	spin_lock(&dev->mblk_sl);
 	mblk = idr_find(&dev->mblk_idr, memidx);
 	if (mblk && mblk->index == memidx) {
-		if( mblk->owner != owner ) {
+		if (mblk->owner != owner) {
 			dev_warn(&dev->dev, "Free mblk from another owner\n");
 			idr_replace(&dev->mblk_idr, dev->dummy_blk, memidx);
 		}
 		list_del(&mblk->list);
-	} else if(mblk) {
+	} else if (mblk) {
 		dev_warn(&dev->dev, "Free mblk with index %d, required %d\n", mblk->index, memidx);
 	}
 	spin_unlock(&dev->mblk_sl);
@@ -593,12 +590,12 @@ void cda_free_dev_mem(struct cda_dev *dev, void *owner)
 	LIST_HEAD(mblks);
 
 	spin_lock(&dev->mblk_sl);
-	if( owner == NULL ){
+	if (owner == NULL) {
 		idr_destroy(&dev->mblk_idr);
 		list_replace_init(&dev->mem_blocks, &mblks);
 	} else {
 		list_for_each_entry_safe(mblk, tmp, &dev->mem_blocks, list) {
-			if( mblk->index > 0L && mblk->owner == owner ) {
+			if (mblk->index > 0L && mblk->owner == owner) {
 				list_move(&mblk->list, &mblks);
 				idr_replace(&dev->mblk_idr, dev->dummy_blk, mblk->index);
 			}
@@ -608,7 +605,7 @@ void cda_free_dev_mem(struct cda_dev *dev, void *owner)
 	list_for_each_entry_safe(mblk, tmp, &mblks, list) {
 		// Unmap blocks owned by specified owner or all if owner is NULL
 		cda_free_mem(mblk);
-		if( owner != NULL ){
+		if (owner != NULL) {
 			spin_lock(&dev->mblk_sl);
 			idr_remove(&dev->mblk_idr, mblk->index);
 			spin_unlock(&dev->mblk_sl);
@@ -617,7 +614,7 @@ void cda_free_dev_mem(struct cda_dev *dev, void *owner)
 }
 
 static void cda_release_map(struct cda_mmap *memmap)
-{	
+{
 	dma_unmap_sg(memmap->dev->pcidev == NULL ? NULL : &memmap->dev->pcidev->dev, memmap->sgt.sgl, memmap->sgt.orig_nents, DMA_BIDIRECTIONAL);
 	unpin_user_pages_dirty_lock(memmap->pages, memmap->blk_cnt, 1);
 	memmap->mapped_blk_cnt = 0;
@@ -632,6 +629,7 @@ static int cda_perform_mapping(
 	ulong len = memmap->size;
 	void __user *buf = memmap->vaddr;
 	struct cda_drv_sg_item *cda_sg_list = memmap->sg_list;
+
 	sg = memmap->sgt.sgl;
 	for (i = 0; i < memmap->sgt.orig_nents; i++, sg = sg_next(sg)) {
 		unsigned int offset = offset_in_page(buf);
@@ -675,18 +673,16 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	req_vaddr = (void __user *)req.vaddr;
 	offset = offset_in_page(req_vaddr);
 	npages = DIV_ROUND_UP(offset + req.size, PAGE_SIZE);
-	memmap = kzalloc(sizeof(*memmap) + npages * (sizeof(struct cda_drv_sg_item) + sizeof(struct page *)), 
+	memmap = kzalloc(sizeof(*memmap) + npages * (sizeof(struct cda_drv_sg_item) + sizeof(struct page *)),
 		in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
-	if (!memmap) {
-		dev_err(&dev->dev, "Can't alloc memmap\n");
+	if (!memmap)
 		goto out;
-	}
 	memmap->owner = owner;
 	memmap->sg_list = (struct cda_drv_sg_item *)((void *)memmap + sizeof(*memmap));
 	memmap->pages = (struct page **)((void *)memmap + sizeof(*memmap) + npages * (sizeof(struct cda_drv_sg_item)));
 
-	if (sg_alloc_table(&memmap->sgt, npages, 
-		in_atomic() ? GFP_ATOMIC :GFP_KERNEL)) {
+	if (sg_alloc_table(&memmap->sgt, npages,
+		in_atomic() ? GFP_ATOMIC : GFP_KERNEL)) {
 		dev_err(&dev->dev, "Can't alloc sg table\n");
 		goto out;
 	}
@@ -706,10 +702,10 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	if (ret < 0)
 		goto err_idr;
 	memmap->index = req.index = idx = ret;
-	
+
 	ret = pin_user_pages_fast((ulong)req_vaddr, npages,
 					FOLL_WRITE, memmap->pages);
-	if ( ret < 0 ) {
+	if (ret < 0) {
 		dev_err(&dev->pcidev->dev,
 			"Pin user pages failed for addr=0x%p [ret=%d]\n",
 			req_vaddr, ret);
@@ -723,7 +719,7 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	}
 
 	ret = cda_perform_mapping(memmap);
-	if ( ret ) {
+	if (ret) {
 		dev_err(&dev->dev, "Can't map user memory for DMA (size %u)", req.size);
 		goto err_dma_alloc;
 	}
@@ -734,7 +730,7 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 		goto err_publish;
 	}
 
-	if(copy_to_user(ureq, &req, sizeof(req))) {
+	if (copy_to_user(ureq, &req, sizeof(req))) {
 		ret = -EFAULT;
 		goto err_copy_to_user;
 	}
@@ -751,7 +747,7 @@ err_copy_to_user:
 err_publish:
 	cda_release_map(memmap);
 err_dma_alloc:
-	unpin_user_pages_dirty_lock(memmap->pages, memmap->blk_cnt, 1);	
+	unpin_user_pages_dirty_lock(memmap->pages, memmap->blk_cnt, 1);
 err_pin:
 	spin_lock(&dev->mblk_sl);
 	idr_remove(&dev->mblk_idr, idx);
@@ -759,10 +755,8 @@ err_pin:
 err_idr:
 	kobject_put(&memmap->kobj);
 out:
-	if( memmap ) {
-		if( memmap->pages ) {
-			kfree(memmap->pages);
-		}
+	if (memmap) {
+		kfree(memmap->pages);
 		kfree(memmap);
 	}
 	return ret;
@@ -780,13 +774,14 @@ int cda_unmap_mem_by_idx(struct cda_dev *dev, void *owner, void __user *ureq)
 {
 	int memidx;
 	struct cda_mmap *memmap;
+
 	if (copy_from_user(&memidx, (void __user *)ureq, sizeof(memidx)))
 		return -EFAULT;
 
 	spin_lock(&dev->mblk_sl);
 	memmap = idr_find(&dev->mblk_idr, memidx);
 	if (memmap && memmap->index == memidx) {
-		if( memmap->owner != owner )
+		if (memmap->owner != owner)
 			dev_warn(&dev->dev, "Unmap buffer by another user\n");
 		idr_replace(&dev->mblk_idr, dev->dummy_blk, memidx);
 		list_del(&memmap->list);
@@ -797,7 +792,7 @@ int cda_unmap_mem_by_idx(struct cda_dev *dev, void *owner, void __user *ureq)
 	if (!memmap)
 		return -ENOENT; // Somebody may already release this block in parallel
 
-	if( memmap->index ) {
+	if (memmap->index) {
 		cda_free_map(memmap);
 		spin_lock(&dev->mblk_sl);
 		idr_remove(&dev->mblk_idr, memmap->index);
@@ -812,11 +807,11 @@ void cda_unmmap_dev_mem(struct cda_dev *dev, void *owner)
 	LIST_HEAD(memmaps);
 
 	spin_lock(&dev->mblk_sl);
-	if( owner == NULL ){
+	if (owner == NULL) {
 		list_replace_init(&dev->mem_maps, &memmaps);
 	} else {
 		list_for_each_entry_safe(memmap, tmp, &dev->mem_maps, list) {
-			if( memmap->index > 0L && memmap->owner == owner ) {
+			if (memmap->index > 0L && memmap->owner == owner) {
 				idr_replace(&dev->mblk_idr, dev->dummy_blk, memmap->index);
 				list_move(&memmap->list, &memmaps);
 			}
@@ -826,7 +821,7 @@ void cda_unmmap_dev_mem(struct cda_dev *dev, void *owner)
 	list_for_each_entry_safe(memmap, tmp, &memmaps, list) {
 		// Unmap blocks owned by specified owner or all if owner is NULL
 		cda_free_map(memmap);
-		if( owner != NULL ){
+		if (owner != NULL) {
 			spin_lock(&dev->mblk_sl);
 			idr_remove(&dev->mblk_idr, memmap->index);
 			spin_unlock(&dev->mblk_sl);
@@ -836,7 +831,9 @@ void cda_unmmap_dev_mem(struct cda_dev *dev, void *owner)
 
 int cda_mems_create(struct cda_dev *cdadev)
 {
-	int ret = sysfs_create_group(&cdadev->dev.kobj, &cda_attr_grp);
+	int ret;
+
+	ret = sysfs_create_group(&cdadev->dev.kobj, &cda_attr_grp);
 	if (ret)
 		goto err_group;
 

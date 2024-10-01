@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: LGPL-3.0
+/* SPDX-License-Identifier: LGPL-3.0 */
 // Copyright(c) 2020 DeGirum Corp., Egor Pomozov.
 //
 // CDA linux driver mem blocks/mem maps and interrupt request handler
@@ -46,9 +46,9 @@ struct cda_req_int {
 };
 
 enum int_type {
-    LEGACY_INTERRUPT = 0,
-    MSI = 1,
-    MSIX = 2
+	LEGACY_INTERRUPT = 0,
+	MSI = 1,
+	MSIX = 2
 };
 
 struct cda_int_lock {
