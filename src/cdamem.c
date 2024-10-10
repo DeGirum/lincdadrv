@@ -24,7 +24,7 @@
 #include <linux/version.h>
 
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 6, 0)
+#if KERNEL_VERSION(5, 6, 0) > LINUX_VERSION_CODE
 /**
  * pin_user_pages_fast() - pin user pages in memory without taking locks
  *
@@ -215,8 +215,8 @@ struct cda_mmap {
 
 struct mblkitem_sysfs_entry {
 	struct attribute attr;
-	ssize_t (*show)(struct cda_mblk *, char *);
-	ssize_t (*store)(struct cda_mblk *, char*, size_t);
+	ssize_t (*show)(struct cda_mblk *mblk, char *buf);
+	ssize_t (*store)(struct cda_mblk *mblk, char *buf, size_t sz);
 };
 
 #define cda_dev_mblk_attr(_field, _fmt)					\
@@ -226,7 +226,7 @@ struct mblkitem_sysfs_entry {
 		return sprintf(buf, _fmt, mblk->_field);		\
 	}								\
 	static struct mblkitem_sysfs_entry mblk_##_field##_attr =	\
-		__ATTR(_field, S_IRUGO, mblk_##_field##_show, NULL)
+		__ATTR(_field, 0444, mblk_##_field##_show, NULL)
 
 #pragma GCC diagnostic ignored "-Wformat"
 cda_dev_mblk_attr(vaddr, "0x%lx\n");
@@ -247,7 +247,7 @@ static struct attribute *mblk_attrs[] = {
 	NULL,
 };
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
+#if KERNEL_VERSION(5, 18, 0) <= LINUX_VERSION_CODE
 ATTRIBUTE_GROUPS(mblk);
 #endif
 static const struct sysfs_ops mblk_ops = {
@@ -255,7 +255,7 @@ static const struct sysfs_ops mblk_ops = {
 };
 
 static const struct kobj_type mblk_type = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
+#if KERNEL_VERSION(5, 18, 0) <= LINUX_VERSION_CODE
 	.default_groups = mblk_groups,
 #else
 	.default_attrs = mblk_attrs,
@@ -288,8 +288,8 @@ static void mblk_release(struct kobject *kobj)
 
 struct memmapitem_sysfs_entry {
 	struct attribute attr;
-	ssize_t (*show)(struct cda_mmap *, char *);
-	ssize_t (*store)(struct cda_mmap *, char *, size_t);
+	ssize_t (*show)(struct cda_mmap *map, char *buf);
+	ssize_t (*store)(struct cda_mmap *map, char *buf, size_t sz);
 };
 
 #define cda_dev_memmap_attr(_field, _fmt)					\
@@ -299,7 +299,7 @@ struct memmapitem_sysfs_entry {
 		return sprintf(buf, _fmt, memmap->_field);		\
 	}								\
 	static struct memmapitem_sysfs_entry memmap_##_field##_attr =	\
-		__ATTR(_field, S_IRUGO, memmap_##_field##_show, NULL)
+		__ATTR(_field, 0444, memmap_##_field##_show, NULL)
 
 #pragma GCC diagnostic ignored "-Wformat"
 cda_dev_memmap_attr(owner, "0x%p\n");
@@ -329,7 +329,7 @@ memmap_sglist_show(struct cda_mmap *memmap, char *buf)
 }
 
 static struct memmapitem_sysfs_entry memmap_sglist_attr =
-	__ATTR(sglist, S_IRUGO, memmap_sglist_show, NULL);
+	__ATTR(sglist, 0444, memmap_sglist_show, NULL);
 
 #pragma GCC diagnostic warning "-Wformat"
 static struct attribute *memmap_attrs[] = {
@@ -342,7 +342,7 @@ static struct attribute *memmap_attrs[] = {
 	NULL,
 };
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
+#if KERNEL_VERSION(5, 18, 0) <= LINUX_VERSION_CODE
 ATTRIBUTE_GROUPS(memmap);
 #endif
 
@@ -371,7 +371,7 @@ static const struct sysfs_ops memmap_ops = {
 };
 
 static const struct kobj_type memmap_type = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0)
+#if KERNEL_VERSION(5, 18, 0) <= LINUX_VERSION_CODE
 	.default_groups = memmap_groups,
 #else
 	.default_attrs = memmap_attrs,
@@ -415,7 +415,7 @@ static int cda_publish_mblk(struct cda_mblk *mblk)
 
 	mmap_attr->mmap = mblk_mmap;
 	mmap_attr->attr.name = "mmap";
-	mmap_attr->attr.mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
+	mmap_attr->attr.mode = 0666;
 	mmap_attr->size = mblk->req_size;
 	mmap_attr->private = mblk;
 	ret = sysfs_create_bin_file(&mblk->kobj, mmap_attr);
@@ -449,7 +449,7 @@ static int cda_publish_memmap(struct cda_mmap *memmap)
 		goto err_add;
 
 	mmap_attr->attr.name = "memmapobj";
-	mmap_attr->attr.mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
+	mmap_attr->attr.mode =  0666;
 	mmap_attr->size = memmap->size;
 	mmap_attr->private = memmap;
 	ret = sysfs_create_bin_file(&memmap->kobj, mmap_attr);
@@ -481,7 +481,7 @@ int cda_alloc_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	if (copy_from_user(&req, ureq, sizeof(req)))
 		return -EFAULT;
 
-	mblk = kzalloc(sizeof(*mblk), in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
+	mblk = kzalloc(sizeof(*mblk), GFP_KERNEL);
 	if (!mblk)
 		goto out;
 	INIT_LIST_HEAD(&mblk->list);
@@ -491,10 +491,10 @@ int cda_alloc_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	mblk->size = req.size;
 	req.size = ALIGN(req.size, PAGE_SIZE);
 
-	idr_preload(in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
+	idr_preload(GFP_KERNEL);
 	spin_lock(&dev->mblk_sl);
 	ret = idr_alloc(&dev->mblk_idr, mblk,
-		1L, 0, in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
+		1L, 0, GFP_KERNEL);
 	spin_unlock(&dev->mblk_sl);
 	idr_preload_end();
 	if (ret < 0)
@@ -505,7 +505,7 @@ int cda_alloc_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 		&dev->pcidev->dev,
 		req.size,
 		&mblk->paddr,
-		in_atomic() ? GFP_ATOMIC | GFP_KERNEL : GFP_KERNEL);
+		GFP_KERNEL);
 	if (!mblk->vaddr) {
 		dev_err(&dev->dev, "Can't alloc DMA memory (size %u)", req.size);
 		ret = -1;
@@ -674,15 +674,14 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	offset = offset_in_page(req_vaddr);
 	npages = DIV_ROUND_UP(offset + req.size, PAGE_SIZE);
 	memmap = kzalloc(sizeof(*memmap) + npages * (sizeof(struct cda_drv_sg_item) + sizeof(struct page *)),
-		in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
+		 GFP_KERNEL);
 	if (!memmap)
 		goto out;
 	memmap->owner = owner;
 	memmap->sg_list = (struct cda_drv_sg_item *)((void *)memmap + sizeof(*memmap));
 	memmap->pages = (struct page **)((void *)memmap + sizeof(*memmap) + npages * (sizeof(struct cda_drv_sg_item)));
 
-	if (sg_alloc_table(&memmap->sgt, npages,
-		in_atomic() ? GFP_ATOMIC : GFP_KERNEL)) {
+	if (sg_alloc_table(&memmap->sgt, npages, GFP_KERNEL)) {
 		dev_err(&dev->dev, "Can't alloc sg table\n");
 		goto out;
 	}
@@ -693,10 +692,9 @@ int cda_map_mem(struct cda_dev *dev, void *owner, void __user *ureq)
 	memmap->vaddr = req_vaddr;
 	memmap->size = req.size;
 	memmap->blk_cnt = npages;
-	idr_preload(in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
+	idr_preload(GFP_KERNEL);
 	spin_lock(&dev->mblk_sl);
-	ret = idr_alloc(&dev->mblk_idr, memmap,
-		1L, 0, in_atomic() ? GFP_ATOMIC : GFP_KERNEL);
+	ret = idr_alloc(&dev->mblk_idr, memmap, 1L, 0, GFP_KERNEL);
 	spin_unlock(&dev->mblk_sl);
 	idr_preload_end();
 	if (ret < 0)

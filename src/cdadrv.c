@@ -24,7 +24,7 @@ MODULE_LICENSE("GPL");
 MODULE_VERSION("0.5.0.4");
 // The version has to be in the format n.n.n.n, where each n is a single digit
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 9, 0)
+#if KERNEL_VERSION(4, 9, 0) > LINUX_VERSION_CODE
 #error Too old kernel
 #endif
 
@@ -84,21 +84,21 @@ static struct class cda_class = {
 	.dev_release = cdadev_release,
 };
 /*
-static inline bool cda_kernel_is_locked_down(void)
-{
-#ifdef CONFIG_LOCK_DOWN_KERNEL
-#ifdef CONFIG_LOCK_DOWN_IN_EFI_SECURE_BOOT / * fedora * /
-	return kernel_is_locked_down(NULL);
-#elif CONFIG_EFI_SECURE_BOOT_LOCK_DOWN / * ubuntu * /
-	return kernel_is_locked_down();
-#else
-	return false;
-#endif
-#else
-	return false;
-#endif
-}
-*/
+ *static inline bool cda_kernel_is_locked_down(void)
+ *{
+ *#ifdef CONFIG_LOCK_DOWN_KERNEL
+ *#ifdef CONFIG_LOCK_DOWN_IN_EFI_SECURE_BOOT / * fedora * /
+ *	return kernel_is_locked_down(NULL);
+ *#elif CONFIG_EFI_SECURE_BOOT_LOCK_DOWN / * ubuntu * /
+ *	return kernel_is_locked_down();
+ *#else
+ *	return false;
+ *#endif
+ *#else
+ *	return false;
+ *#endif
+ *}
+ */
 static void cdadev_free(struct cda_dev *cdadev)
 {
 	ida_simple_remove(&cdaminor_ida, cdadev->minor);
