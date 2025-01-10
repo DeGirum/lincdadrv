@@ -7,12 +7,12 @@
 // under the terms and conditions of the GNU General Public License,
 // version 2, as published by the Free Software Foundation.
 //
+#include <linux/delay.h>
+#include <linux/interrupt.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/pci.h>
-#include <linux/interrupt.h>
 #include <linux/sched.h>
-#include <linux/delay.h>
 #include <linux/uaccess.h>
 
 #include "cdadrv.h"
@@ -33,26 +33,16 @@ struct cda_interrupts {
 	struct msix_entry *msix_entries;
 };
 
-#if KERNEL_VERSION(5, 4, 0) <= LINUX_VERSION_CODE
-struct cda_bar {
-	struct kobject kobj;
-	/* struct resource *res; */
-	int index;
-	phys_addr_t paddr;
-	phys_addr_t len;
-	void *vaddr;
-	struct cda_dev *dev;
-	struct bin_attribute mmap_attr;
-};
+
+#if KERNEL_VERSION(5, 4, 0) > LINUX_VERSION_CODE
+# if defined __has_attribute
+#  if __has_attribute(__fallthrough__)
+#   define fallthrough __attribute__((__fallthrough__))
+#  endif
 #else
-#if defined __has_attribute
-# if __has_attribute(__fallthrough__)
-#  define fallthrough                    __attribute__((__fallthrough__))
-# endif
-#else
-# define fallthrough                    do {} while (0)  /* fallthrough */
-#endif //has_attribute
-#endif // LINUX_VERSION_CODE
+#  define fallthrough  do {} while (0) /* fallthrough */
+#endif  // has_attribute
+#endif      // LINUX_VERSION_CODE
 
 static int cda_alloc_msix(struct cda_dev *cdadev, uint32_t rvecs, struct cda_interrupts *ints)
 {
@@ -414,12 +404,6 @@ static const struct kobj_type bar_type = {
 #endif
 };
 
-// Secure enable support
-static const struct vm_operations_struct pci_phys_vm_ops = {
-#ifdef CONFIG_HAVE_IOREMAP_PROT
-	.access = generic_access_phys,
-#endif
-};
 
 static int bar_mmap(struct file *file,
 		    struct kobject *kobj,

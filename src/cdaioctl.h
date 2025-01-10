@@ -60,3 +60,16 @@ struct cda_sem_aq {
 	uint32_t sem_id;
 	uint64_t time_ns;
 };
+
+#define MBLK_IDX_SIG           7
+#define BAR_IDX_SIG            8
+#define SIG_BPOS               24
+#define IDX_BPOS               20
+#define BAR_OFFSET_MAPPING     (BAR_IDX_SIG << SIG_BPOS)
+#define MBLK_OFFSET_MAPPING    (MBLK_IDX_SIG << SIG_BPOS)
+#define USR_BAR_OFF(idx)       ((idx << IDX_BPOS) | BAR_OFFSET_MAPPING)
+#define USR_MBLK_OFF(idx)      ((idx << IDX_BPOS) | MBLK_OFFSET_MAPPING)
+#define BAR_ID_OFF_VMA(off)    ((((off << PAGE_SHIFT) & ~BAR_OFFSET_MAPPING) >> IDX_BPOS)&0x7)
+#define MBLK_ID_OFF_VMA(off)   ((((off << PAGE_SHIFT) & ~MBLK_OFFSET_MAPPING) >> IDX_BPOS)&0xFF)
+#define IS_BAR_MAPPING(off)    ((off >> (SIG_BPOS - PAGE_SHIFT)) == BAR_IDX_SIG)
+#define IS_MBLK_MAPPING(off)   ((off >> (SIG_BPOS - PAGE_SHIFT)) == MBLK_IDX_SIG)

@@ -13,10 +13,10 @@
 // version 2, as published by the Free Software Foundation.
 //
 
-#include <linux/fs.h>
-#include <linux/uaccess.h>
-#include <linux/mm.h>
 #include <linux/dma-mapping.h>
+#include <linux/fs.h>
+#include <linux/mm.h>
+#include <linux/uaccess.h>
 
 #include "cdadrv.h"
 #include "cdaioctl.h"
@@ -180,19 +180,6 @@ static ssize_t mblk_attr_show(
 
 static void mblk_release(struct kobject *kobj);
 
-struct cda_mblk {
-	struct cda_dev *dev;
-	int index;
-
-	struct kobject kobj;
-	uint32_t req_size;
-	void *vaddr; //kernel
-	uint32_t size;
-	dma_addr_t paddr;
-	void *owner;
-	struct list_head list;
-	struct bin_attribute mmap_attr;
-};
 
 struct cda_mmap {
 	struct cda_dev *dev;
