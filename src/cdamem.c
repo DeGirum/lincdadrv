@@ -180,6 +180,19 @@ static ssize_t mblk_attr_show(
 
 static void mblk_release(struct kobject *kobj);
 
+struct cda_mblk {
+	struct cda_dev *dev;
+	int index;
+
+	struct kobject kobj;
+	uint32_t req_size;
+	void *vaddr; //kernel
+	uint32_t size;
+	dma_addr_t paddr;
+	void *owner;
+	struct list_head list;
+	struct bin_attribute mmap_attr;
+};
 
 struct cda_mmap {
 	struct cda_dev *dev;
@@ -840,4 +853,36 @@ void cda_mems_release(struct cda_dev *dev)
 	kobject_del(dev->kobj_mems);
 	kobject_put(dev->kobj_mems);
 	sysfs_remove_group(&dev->dev.kobj, &cda_attr_grp);
+}
+
+static struct cda_mblk *getmblk(struct cda_dev *dev, int mblk_idx)
+{
+	struct cda_mblk *mblk = NULL;
+
+	spin_lock(&dev->mblk_sl);
+	mblk = (struct cda_mblk *)idr_find(&dev->mblk_idr, mblk_idx);
+	spin_unlock(&dev->mblk_sl);
+	return mblk;
+}
+
+int cda_cdev_mblk_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	struct cda_dev *cdadev = file->private_data;
+	int idx = MBLK_ID_OFF_VMA(vma->vm_pgoff);
+	struct cda_mblk *mblk = getmblk(cdadev, idx);
+
+	if (!mblk)
+		return -ENOMEM;
+	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
+	unsigned long pages = mblk->req_size >> PAGE_SHIFT;
+
+	vma->vm_pgoff = 0;
+	if (vma->vm_pgoff + requested > pages)
+		return -EINVAL;
+
+	if (dma_mmap_coherent(&mblk->dev->pcidev->dev, vma, mblk->vaddr, mblk->paddr, mblk->req_size)) {
+		dev_err(&mblk->dev->pcidev->dev, "DMA remapping failed");
+		return -ENXIO;
+	}
+	return 0;
 }

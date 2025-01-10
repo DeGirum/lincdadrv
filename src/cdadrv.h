@@ -52,38 +52,6 @@ struct cda_dev {
 	void *sem_owner[CDA_MAX_DRV_SEMAPHORES];
 };
 
-struct cda_bar {
-	struct kobject kobj;
-	/* struct resource *res; */
-	int index;
-	phys_addr_t paddr;
-	phys_addr_t len;
-	void *vaddr;
-	struct cda_dev *dev;
-	struct bin_attribute mmap_attr;
-};
-
-struct cda_mblk {
-	struct cda_dev *dev;
-	int index;
-
-	struct kobject kobj;
-	uint32_t req_size;
-	void *vaddr; //kernel
-	uint32_t size;
-	dma_addr_t paddr;
-	void *owner;
-	struct list_head list;
-	struct bin_attribute mmap_attr;
-};
-
-// Secure enable support
-static const struct vm_operations_struct pci_phys_vm_ops = {
-#ifdef CONFIG_HAVE_IOREMAP_PROT
-	.access = generic_access_phys,
-#endif
-};
-
 int cda_alloc_mem(struct cda_dev *dev, void *owner, void __user *arg);
 int cda_free_mem_by_idx(struct cda_dev *dev, void *owner, void __user *ureq);
 int cda_map_mem(struct cda_dev *dev, void *owner, void __user *arg);
@@ -101,4 +69,6 @@ void cda_release_bars(struct cda_dev *cdadev);
 int cda_sem_aq(struct cda_dev *cdadev, void *owner, void __user *ureq);
 int cda_sem_rel(struct cda_dev *cdadev, void *owner, void __user *ureq);
 void cda_sem_rel_by_owner(struct cda_dev *dev, void *owner);
+int cda_cdev_bar_mmap(struct file *file, struct vm_area_struct *vma);
+int cda_cdev_mblk_mmap(struct file *file, struct vm_area_struct *vma);
 

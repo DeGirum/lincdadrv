@@ -21,7 +21,7 @@
 MODULE_AUTHOR("DeGirum Corp., Egor Pomozov");
 MODULE_DESCRIPTION("CDA linux driver to access pci devices");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("0.5.0.5");
+MODULE_VERSION("0.6.0.0");
 // The version has to be in the format n.n.n.n, where each n is a single digit
 
 #if KERNEL_VERSION(4, 9, 0) > LINUX_VERSION_CODE
@@ -355,64 +355,6 @@ static long cda_cdev_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 	}
 }
 
-static int cda_cdev_bar_mmap(struct file *file, struct vm_area_struct *vma)
-{
-	struct cda_dev *cdadev = file->private_data;
-	int idx = BAR_ID_OFF_VMA(vma->vm_pgoff);
-	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-	unsigned long pages = cdadev->sysfs_bar[idx]->len >> PAGE_SHIFT;
-	unsigned long size;
-
-	vma->vm_pgoff = 0;
-	if (vma->vm_pgoff + requested > pages)
-		return -EINVAL;
-
-	size = ((pci_resource_len(cdadev->pcidev, idx) - 1) >> PAGE_SHIFT) + 1;
-	if (vma->vm_pgoff + vma_pages(vma) > size)
-		return -EINVAL;
-
-	vma->vm_page_prot = pgprot_device(vma->vm_page_prot);
-	vma->vm_pgoff += (pci_resource_start(cdadev->pcidev, idx) >> PAGE_SHIFT);
-	vma->vm_ops = &pci_phys_vm_ops;
-
-	if (io_remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, vma->vm_end - vma->vm_start, vma->vm_page_prot))
-		return -EAGAIN;
-
-	return 0;
-}
-
-static struct cda_mblk *getmblk(struct cda_dev *dev, int mblk_idx)
-{
-	struct cda_mblk *mblk = NULL;
-
-	spin_lock(&dev->mblk_sl);
-	mblk = (struct cda_mblk *)idr_find(&dev->mblk_idr, mblk_idx);
-	spin_unlock(&dev->mblk_sl);
-	return mblk;
-}
-
-static int cda_cdev_mblk_mmap(struct file *file, struct vm_area_struct *vma)
-{
-	struct cda_dev *cdadev = file->private_data;
-	int idx = MBLK_ID_OFF_VMA(vma->vm_pgoff);
-	struct cda_mblk *mblk = getmblk(cdadev, idx);
-
-	if (!mblk)
-		return -ENOMEM;
-	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-	unsigned long pages = mblk->req_size >> PAGE_SHIFT;
-
-	vma->vm_pgoff = 0;
-	if (vma->vm_pgoff + requested > pages)
-		return -EINVAL;
-
-	if (dma_mmap_coherent(&mblk->dev->pcidev->dev, vma, mblk->vaddr, mblk->paddr, mblk->req_size)) {
-		dev_err(&mblk->dev->pcidev->dev, "DMA remapping failed");
-		return -ENXIO;
-	}
-	return 0;
-}
-
 static int cda_cdev_mmap(struct file *file, struct vm_area_struct *vma)
 {
 	if (IS_BAR_MAPPING(vma->vm_pgoff))
@@ -469,7 +411,7 @@ err_alloc_cdev_reg:
 	return ret;
 }
 
-static void __exit dcadrv_exit(void)
+static void __exit cdadrv_exit(void)
 {
 	if (test_probe) {
 		pr_info("Stop test run. Nothing initialized\n");
@@ -481,4 +423,4 @@ static void __exit dcadrv_exit(void)
 }
 
 module_init(cdadrv_init);
-module_exit(dcadrv_exit);
+module_exit(cdadrv_exit);

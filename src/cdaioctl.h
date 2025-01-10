@@ -61,6 +61,8 @@ struct cda_sem_aq {
 	uint64_t time_ns;
 };
 
+// Limitation: This mapping affects the Number of mblk instances to max of 256 per device.
+
 #define MBLK_IDX_SIG           7
 #define BAR_IDX_SIG            8
 #define SIG_BPOS               24

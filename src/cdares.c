@@ -33,16 +33,26 @@ struct cda_interrupts {
 	struct msix_entry *msix_entries;
 };
 
-
-#if KERNEL_VERSION(5, 4, 0) > LINUX_VERSION_CODE
-# if defined __has_attribute
-#  if __has_attribute(__fallthrough__)
-#   define fallthrough __attribute__((__fallthrough__))
-#  endif
+#if KERNEL_VERSION(5, 4, 0) <= LINUX_VERSION_CODE
+struct cda_bar {
+	struct kobject kobj;
+	/* struct resource *res; */
+	int index;
+	phys_addr_t paddr;
+	phys_addr_t len;
+	void *vaddr;
+	struct cda_dev *dev;
+	struct bin_attribute mmap_attr;
+};
 #else
-#  define fallthrough  do {} while (0) /* fallthrough */
-#endif  // has_attribute
-#endif      // LINUX_VERSION_CODE
+#if defined __has_attribute
+# if __has_attribute(__fallthrough__)
+#  define fallthrough                    __attribute__((__fallthrough__))
+# endif
+#else
+# define fallthrough                    do {} while (0)  /* fallthrough */
+#endif //has_attribute
+#endif // LINUX_VERSION_CODE
 
 static int cda_alloc_msix(struct cda_dev *cdadev, uint32_t rvecs, struct cda_interrupts *ints)
 {
@@ -404,6 +414,12 @@ static const struct kobj_type bar_type = {
 #endif
 };
 
+// Secure enable support
+static const struct vm_operations_struct pci_phys_vm_ops = {
+#ifdef CONFIG_HAVE_IOREMAP_PROT
+	.access = generic_access_phys,
+#endif
+};
 
 static int bar_mmap(struct file *file,
 		    struct kobject *kobj,
@@ -560,3 +576,33 @@ void cda_release_bars(struct cda_dev *cdadev)
 	}
 }
 #endif
+
+int cda_cdev_bar_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	struct cda_dev *cdadev = file->private_data;
+	int idx = BAR_ID_OFF_VMA(vma->vm_pgoff);
+	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
+	unsigned long pages;
+	unsigned long size;
+	int len = pci_resource_len(cdadev->pcidev, idx);
+
+	if (len > 0) // bar initted
+		pages = len >> PAGE_SHIFT;
+
+	vma->vm_pgoff = 0;
+	if (vma->vm_pgoff + requested > pages)
+		return -EINVAL;
+
+	size = ((pci_resource_len(cdadev->pcidev, idx) - 1) >> PAGE_SHIFT) + 1;
+	if (vma->vm_pgoff + vma_pages(vma) > size)
+		return -EINVAL;
+
+	vma->vm_page_prot = pgprot_device(vma->vm_page_prot);
+	vma->vm_pgoff += (pci_resource_start(cdadev->pcidev, idx) >> PAGE_SHIFT);
+	vma->vm_ops = &pci_phys_vm_ops;
+
+	if (io_remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, vma->vm_end - vma->vm_start, vma->vm_page_prot))
+		return -EAGAIN;
+
+	return 0;
+}
