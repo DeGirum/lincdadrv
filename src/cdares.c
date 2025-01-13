@@ -584,7 +584,12 @@ int cda_cdev_bar_mmap(struct file *file, struct vm_area_struct *vma)
 	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
 	unsigned long pages;
 	unsigned long size;
-	int len = pci_resource_len(cdadev->pcidev, idx);
+	int len;
+
+	if (idx > PCI_STD_NUM_BARS)
+		return -EINVAL;
+
+	len = pci_resource_len(cdadev->pcidev, idx);
 
 	if (len > 0) // bar initted
 		pages = len >> PAGE_SHIFT;
