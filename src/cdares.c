@@ -586,7 +586,7 @@ int cda_cdev_bar_mmap(struct file *file, struct vm_area_struct *vma)
 	unsigned long size;
 	int len;
 
-	if (idx > PCI_STD_NUM_BARS)
+	if (idx > PCI_STD_RESOURCE_END)
 		return -EINVAL;
 
 	len = pci_resource_len(cdadev->pcidev, idx);
