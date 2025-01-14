@@ -608,6 +608,7 @@ int cda_cdev_bar_mmap(struct file *file, struct vm_area_struct *vma)
 
 	if (io_remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, vma->vm_end - vma->vm_start, vma->vm_page_prot))
 		return -EAGAIN;
+	dev_info(&cdadev->dev,"bar mmap %lx %lx",vma->vm_start, vma->vm_end - vma->vm_start);
 
 	return 0;
 }

@@ -884,5 +884,6 @@ int cda_cdev_mblk_mmap(struct file *file, struct vm_area_struct *vma)
 		dev_err(&mblk->dev->pcidev->dev, "DMA remapping failed");
 		return -ENXIO;
 	}
+	dev_info(&cdadev->dev,"mblk mmap %lx %lx",vma->vm_start, vma->vm_end - vma->vm_start);
 	return 0;
 }
