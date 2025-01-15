@@ -580,20 +580,22 @@ void cda_release_bars(struct cda_dev *cdadev)
 
 int cda_cdev_bar_mmap(struct file *file, struct vm_area_struct *vma)
 {
-	struct cda_dev *cdadev = file->private_data;
-	int idx = BAR_ID_OFF_VMA(vma->vm_pgoff);
-	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
 	unsigned long pages;
 	unsigned long size;
 	int len;
+	struct cda_dev *cdadev = file->private_data;
+	int idx = BAR_ID_OFF_VMA(vma->vm_pgoff);
+	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
 
 	if (idx > PCI_STD_RESOURCE_END)
 		return -EINVAL;
 
 	len = pci_resource_len(cdadev->pcidev, idx);
 
-	if (len > 0) // bar initted
-		pages = len >> PAGE_SHIFT;
+	pages = len >> PAGE_SHIFT;
+
+	if (len > 0) // bar initted?
+		return -EINVAL;
 
 	vma->vm_pgoff = 0;
 	if (vma->vm_pgoff + requested > pages)
