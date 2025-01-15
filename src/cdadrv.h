@@ -10,6 +10,7 @@
 #include <linux/cdev.h>
 #include <linux/pci.h>
 #include <linux/version.h>
+#include <linux/fs.h>
 
 
 #define CDA_MAX_DRV_SEMAPHORES (16)

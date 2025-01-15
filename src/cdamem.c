@@ -867,14 +867,15 @@ static struct cda_mblk *getmblk(struct cda_dev *dev, int mblk_idx)
 
 int cda_cdev_mblk_mmap(struct file *file, struct vm_area_struct *vma)
 {
+	unsigned long requested,pages;
 	struct cda_dev *cdadev = file->private_data;
 	int idx = MBLK_ID_OFF_VMA(vma->vm_pgoff);
 	struct cda_mblk *mblk = getmblk(cdadev, idx);
 
 	if (!mblk)
 		return -ENOMEM;
-	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-	unsigned long pages = mblk->req_size >> PAGE_SHIFT;
+	requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
+	pages = mblk->req_size >> PAGE_SHIFT;
 
 	vma->vm_pgoff = 0;
 	if (vma->vm_pgoff + requested > pages)
