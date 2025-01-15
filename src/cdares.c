@@ -346,6 +346,13 @@ void cda_sem_rel_by_owner(struct cda_dev *dev, void *owner)
 	mutex_unlock(&dev->ilock);
 }
 
+// Secure enable support
+static const struct vm_operations_struct pci_phys_vm_ops = {
+#ifdef CONFIG_HAVE_IOREMAP_PROT
+	.access = generic_access_phys,
+#endif
+};
+
 #if KERNEL_VERSION(5, 4, 0) <= LINUX_VERSION_CODE
 #define to_bar(obj) container_of((obj), struct cda_bar, kobj)
 struct bar_sysfs_entry {
@@ -414,12 +421,6 @@ static const struct kobj_type bar_type = {
 #endif
 };
 
-// Secure enable support
-static const struct vm_operations_struct pci_phys_vm_ops = {
-#ifdef CONFIG_HAVE_IOREMAP_PROT
-	.access = generic_access_phys,
-#endif
-};
 
 static int bar_mmap(struct file *file,
 		    struct kobject *kobj,
