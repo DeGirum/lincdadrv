@@ -1,3 +1,9 @@
+cdapci-dkms (0.6.0.1) focal; urgency=medium
+
+  * test 0.6.0.1
+
+ -- Alexander Bolotov <bolotov@degirum.com>  Thu, 16 Jan 2025 23:11:27 +0000
+
 cdapci-dkms (0.5.0.3) jammy; urgency=medium
 
   * repo level gpg key
