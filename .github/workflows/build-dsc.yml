@@ -53,4 +53,11 @@ jobs:
         with:
           name: cdapci
           path: ${{ github.workspace }}/cdapci-dkms_${{ steps.version.outputs.VERSION}}_all.deb
+      - name: Release cdapci driver
+        uses: softprops/action-gh-release@v2
+        with:
+          fail_on_unmatched_files: true
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          files: |
+            ${{ github.workspace }}/*.deb
       
