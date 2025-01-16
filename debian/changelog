@@ -1,3 +1,9 @@
+cdapci-dkms (0.6.0.0) focal; urgency=medium
+
+  * workflow changes
+
+ -- Alexander Bolotov <bolotov@degirum.com>  Thu, 16 Jan 2025 19:07:46 +0000
+
 cdapci-dkms (0.6.0.0) noble; urgency=medium
 
   * upgrade github workflow for v4
