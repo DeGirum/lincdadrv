@@ -59,5 +59,4 @@ jobs:
           fail_on_unmatched_files: true
           tag_name: ${{ steps.version.outputs.VERSION }}
           files: |
-            ${{ github.workspace }}/*.deb
-      
+            ${{ github.workspace }}/cdapci-dkms_${{ steps.version.outputs.VERSION}}_all.deb
