@@ -7,12 +7,12 @@
 // under the terms and conditions of the GNU General Public License,
 // version 2, as published by the Free Software Foundation.
 //
+#include <linux/delay.h>
+#include <linux/interrupt.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/pci.h>
-#include <linux/interrupt.h>
 #include <linux/sched.h>
-#include <linux/delay.h>
 #include <linux/uaccess.h>
 
 #include "cdadrv.h"
@@ -346,6 +346,13 @@ void cda_sem_rel_by_owner(struct cda_dev *dev, void *owner)
 	mutex_unlock(&dev->ilock);
 }
 
+// Secure enable support
+static const struct vm_operations_struct pci_phys_vm_ops = {
+#ifdef CONFIG_HAVE_IOREMAP_PROT
+	.access = generic_access_phys,
+#endif
+};
+
 #if KERNEL_VERSION(5, 4, 0) <= LINUX_VERSION_CODE
 #define to_bar(obj) container_of((obj), struct cda_bar, kobj)
 struct bar_sysfs_entry {
@@ -414,12 +421,6 @@ static const struct kobj_type bar_type = {
 #endif
 };
 
-// Secure enable support
-static const struct vm_operations_struct pci_phys_vm_ops = {
-#ifdef CONFIG_HAVE_IOREMAP_PROT
-	.access = generic_access_phys,
-#endif
-};
 
 static int bar_mmap(struct file *file,
 		    struct kobject *kobj,
@@ -576,3 +577,41 @@ void cda_release_bars(struct cda_dev *cdadev)
 	}
 }
 #endif
+
+int cda_cdev_bar_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	unsigned long pages;
+	unsigned long size;
+	int len;
+	struct cda_dev *cdadev = file->private_data;
+	int idx = BAR_ID_OFF_VMA(vma->vm_pgoff);
+	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
+
+	if (idx > PCI_STD_RESOURCE_END)
+		return -EINVAL;
+
+	len = pci_resource_len(cdadev->pcidev, idx);
+
+	pages = len >> PAGE_SHIFT;
+
+	if (len > 0) // bar initted?
+		return -EINVAL;
+
+	vma->vm_pgoff = 0;
+	if (vma->vm_pgoff + requested > pages)
+		return -EINVAL;
+
+	size = ((pci_resource_len(cdadev->pcidev, idx) - 1) >> PAGE_SHIFT) + 1;
+	if (vma->vm_pgoff + vma_pages(vma) > size)
+		return -EINVAL;
+
+	vma->vm_page_prot = pgprot_device(vma->vm_page_prot);
+	vma->vm_pgoff += (pci_resource_start(cdadev->pcidev, idx) >> PAGE_SHIFT);
+	vma->vm_ops = &pci_phys_vm_ops;
+
+	if (io_remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, vma->vm_end - vma->vm_start, vma->vm_page_prot))
+		return -EAGAIN;
+	dev_info(&cdadev->dev,"bar mmap %lx %lx",vma->vm_start, vma->vm_end - vma->vm_start);
+
+	return 0;
+}

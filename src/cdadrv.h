@@ -7,9 +7,10 @@
 // under the terms and conditions of the GNU General Public License,
 // version 2, as published by the Free Software Foundation.
 //
-#include <linux/pci.h>
 #include <linux/cdev.h>
+#include <linux/pci.h>
 #include <linux/version.h>
+#include <linux/fs.h>
 
 
 #define CDA_MAX_DRV_SEMAPHORES (16)
@@ -69,3 +70,6 @@ void cda_release_bars(struct cda_dev *cdadev);
 int cda_sem_aq(struct cda_dev *cdadev, void *owner, void __user *ureq);
 int cda_sem_rel(struct cda_dev *cdadev, void *owner, void __user *ureq);
 void cda_sem_rel_by_owner(struct cda_dev *dev, void *owner);
+int cda_cdev_bar_mmap(struct file *file, struct vm_area_struct *vma);
+int cda_cdev_mblk_mmap(struct file *file, struct vm_area_struct *vma);
+

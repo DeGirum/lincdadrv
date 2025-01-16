@@ -10,10 +10,10 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/module.h>
 #include <linux/errno.h>
-#include <linux/init.h>
 #include <linux/fs.h>
+#include <linux/init.h>
+#include <linux/module.h>
 
 #include "cdadrv.h"
 #include "cdaioctl.h"
@@ -21,7 +21,7 @@
 MODULE_AUTHOR("DeGirum Corp., Egor Pomozov");
 MODULE_DESCRIPTION("CDA linux driver to access pci devices");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("0.5.0.4");
+MODULE_VERSION("0.6.0.0");
 // The version has to be in the format n.n.n.n, where each n is a single digit
 
 #if KERNEL_VERSION(4, 9, 0) > LINUX_VERSION_CODE
@@ -55,6 +55,7 @@ static int cda_pci_probe(struct pci_dev *pcidev,
 static int cda_cdev_open(struct inode *ino, struct file *file);
 static int cda_cdev_release(struct inode *ino, struct file *file);
 static long cda_cdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
+static int cda_cdev_mmap(struct file *file, struct vm_area_struct *vma);
 
 static struct pci_device_id cda_pci_ids[] = {
 	{ PCI_DEVICE(0x1f0d, 0x0100) },
@@ -77,6 +78,7 @@ static const struct file_operations cda_fileops = {
 	.open = cda_cdev_open,
 	.release = cda_cdev_release,
 	.unlocked_ioctl = cda_cdev_ioctl,
+	.mmap = cda_cdev_mmap,
 };
 
 static struct class cda_class = {
@@ -353,6 +355,15 @@ static long cda_cdev_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 	}
 }
 
+static int cda_cdev_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	if (IS_BAR_MAPPING(vma->vm_pgoff))
+		return cda_cdev_bar_mmap(file, vma);
+	if (IS_MBLK_MAPPING(vma->vm_pgoff))
+		return cda_cdev_mblk_mmap(file, vma);
+	return -EINVAL;
+}
+
 static void cdadev_release(struct device *dev)
 {
 	struct cda_dev *cdadev = container_of(dev, struct cda_dev, dev);
@@ -400,7 +411,7 @@ err_alloc_cdev_reg:
 	return ret;
 }
 
-static void __exit dcadrv_exit(void)
+static void __exit cdadrv_exit(void)
 {
 	if (test_probe) {
 		pr_info("Stop test run. Nothing initialized\n");
@@ -412,4 +423,4 @@ static void __exit dcadrv_exit(void)
 }
 
 module_init(cdadrv_init);
-module_exit(dcadrv_exit);
+module_exit(cdadrv_exit);

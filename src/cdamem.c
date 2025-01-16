@@ -13,10 +13,10 @@
 // version 2, as published by the Free Software Foundation.
 //
 
-#include <linux/fs.h>
-#include <linux/uaccess.h>
-#include <linux/mm.h>
 #include <linux/dma-mapping.h>
+#include <linux/fs.h>
+#include <linux/mm.h>
+#include <linux/uaccess.h>
 
 #include "cdadrv.h"
 #include "cdaioctl.h"
@@ -853,4 +853,38 @@ void cda_mems_release(struct cda_dev *dev)
 	kobject_del(dev->kobj_mems);
 	kobject_put(dev->kobj_mems);
 	sysfs_remove_group(&dev->dev.kobj, &cda_attr_grp);
+}
+
+static struct cda_mblk *getmblk(struct cda_dev *dev, int mblk_idx)
+{
+	struct cda_mblk *mblk = NULL;
+
+	spin_lock(&dev->mblk_sl);
+	mblk = (struct cda_mblk *)idr_find(&dev->mblk_idr, mblk_idx);
+	spin_unlock(&dev->mblk_sl);
+	return mblk;
+}
+
+int cda_cdev_mblk_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	unsigned long requested,pages;
+	struct cda_dev *cdadev = file->private_data;
+	int idx = MBLK_ID_OFF_VMA(vma->vm_pgoff);
+	struct cda_mblk *mblk = getmblk(cdadev, idx);
+
+	if (!mblk)
+		return -ENOMEM;
+	requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
+	pages = mblk->req_size >> PAGE_SHIFT;
+
+	vma->vm_pgoff = 0;
+	if (vma->vm_pgoff + requested > pages)
+		return -EINVAL;
+
+	if (dma_mmap_coherent(&mblk->dev->pcidev->dev, vma, mblk->vaddr, mblk->paddr, mblk->req_size)) {
+		dev_err(&mblk->dev->pcidev->dev, "DMA remapping failed");
+		return -ENXIO;
+	}
+	dev_info(&cdadev->dev,"mblk mmap %lx %lx",vma->vm_start, vma->vm_end - vma->vm_start);
+	return 0;
 }
