@@ -1,3 +1,9 @@
+cdapci-dkms (0.6.0.0) noble; urgency=medium
+
+  * upgrade github workflow for v4
+
+ -- Alexander Bolotov <bolotov@degirum.com>  Thu, 16 Jan 2025 18:40:02 +0000
+
 cdapci-dkms (0.5.0.3) jammy; urgency=medium
 
   * repo level gpg key
