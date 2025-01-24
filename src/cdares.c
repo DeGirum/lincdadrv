@@ -594,7 +594,7 @@ int cda_cdev_bar_mmap(struct file *file, struct vm_area_struct *vma)
 
 	pages = len >> PAGE_SHIFT;
 
-	if (len > 0) // bar initted?
+	if (len == 0) // bar initted?
 		return -EINVAL;
 
 	vma->vm_pgoff = 0;
