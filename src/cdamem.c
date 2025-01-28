@@ -370,7 +370,7 @@ static const struct sysfs_ops memmap_ops = {
 	.show = memmap_attr_show,
 };
 
-static const struct kobj_type memmap_type = {
+static struct kobj_type memmap_type = {
 #if KERNEL_VERSION(5, 18, 0) <= LINUX_VERSION_CODE
 	.default_groups = memmap_groups,
 #else
