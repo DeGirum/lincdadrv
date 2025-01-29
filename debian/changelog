@@ -1,3 +1,9 @@
+cdapci-dkms (0.6.0.0) focal; urgency=medium
+
+  * release for docker container (non root)
+
+ -- Alexander Bolotov <bolotov@degirum.com>  Wed, 29 Jan 2025 19:13:40 +0000
+
 cdapci-dkms (0.5.0.3) jammy; urgency=medium
 
   * repo level gpg key
