@@ -9,7 +9,7 @@ on:
         default: ""
 jobs:
   Build-DSC-Repo:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Install prerequisites and set up git
         run: |
