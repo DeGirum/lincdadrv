@@ -380,10 +380,17 @@ static struct kobj_type memmap_type = {
 	.release = memmap_release,
 };
 
+#if KERNEL_VERSION(6, 13, 0) <= LINUX_VERSION_CODE
+static int mblk_mmap(struct file *file,
+		     struct kobject *kobj,
+		     const struct bin_attribute *attr,
+		     struct vm_area_struct *vma)
+#else
 static int mblk_mmap(struct file *file,
 		     struct kobject *kobj,
 		     struct bin_attribute *attr,
 		     struct vm_area_struct *vma)
+#endif
 {
 	struct cda_mblk *mblk = attr->private;
 	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;

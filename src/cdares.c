@@ -422,10 +422,17 @@ static struct kobj_type bar_type = {
 };
 
 
+#if KERNEL_VERSION(6, 13, 0) <= LINUX_VERSION_CODE
+static int bar_mmap(struct file *file,
+		    struct kobject *kobj,
+		    const struct bin_attribute *attr,
+		    struct vm_area_struct *vma)
+#else
 static int bar_mmap(struct file *file,
 		    struct kobject *kobj,
 		    struct bin_attribute *attr,
 		    struct vm_area_struct *vma)
+#endif
 {
 	struct cda_bar *bar = attr->private;
 	unsigned long requested = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
