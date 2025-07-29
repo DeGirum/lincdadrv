@@ -46,11 +46,9 @@ jobs:
           git push
           git push --tags
         working-directory: ${{ github.workspace }}/workspace
-      - name: Update tag
+      - name: Update tag only
         if: ${{ github.event.inputs.changelog-description == '' }}
         run: |
-          dch --newversion ${{ steps.version.outputs.VERSION }} --controlmaint "${{ github.event.inputs.changelog-description }}"
-          dch --release --controlmaint ""
           git tag -a ${{ steps.version.outputs.VERSION }} -m 'Add tag for version ${{ steps.version.outputs.VERSION }}'
           git push --tags
       - name: Build package
