@@ -14,7 +14,7 @@ jobs:
       - name: Install prerequisites and set up git
         run: |
           sudo apt update
-          sudo apt install gnupg dput dh-make devscripts lintian dpkg-dev reprepro dkms
+          sudo apt install gnupg dput dh-make devscripts lintian dpkg-dev reprepro dkms build-essential
           git config --global user.name 'Alexander Bolotov'
           git config --global user.email 'bolotov@degirum.com'
       - name: Check out repository code
