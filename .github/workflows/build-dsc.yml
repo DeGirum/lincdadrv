@@ -46,6 +46,14 @@ jobs:
           git push
           git push --tags
         working-directory: ${{ github.workspace }}/workspace
+      - name: Build package
+        run: debuild -b
+        working-directory: ${{ github.workspace }}/workspace
+      - name: upload the debian pkg
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdapci
+          path: ${{ github.workspace }}/cdapci-dkms_${{ steps.version.outputs.VERSION}}_all.deb
       - name: Update tag only
         if: ${{ github.event.inputs.changelog-description == '' }}
         uses: actions/github-script@v5
@@ -57,12 +65,3 @@ jobs:
               ref: 'refs/tags/${{ steps.version.outputs.VERSION }}',
               sha: context.sha
             })
-      - name: Build package
-        run: debuild -b
-        working-directory: ${{ github.workspace }}/workspace
-      - name: upload the debian pkg
-        uses: actions/upload-artifact@v4
-        with:
-          name: cdapci
-          path: ${{ github.workspace }}/cdapci-dkms_${{ steps.version.outputs.VERSION}}_all.deb
-      
