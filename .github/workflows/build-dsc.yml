@@ -5,7 +5,7 @@ on:
       changelog-description:
         description: "Description of changes for debian changelog file and Github tag."
         type: string
-        required: true
+        required: false
         default: ""
 jobs:
   Build-DSC-Repo:
@@ -36,6 +36,7 @@ jobs:
         run: echo "Version ${{ steps.version.outputs.VERSION }} sourced from src/cdadrv.c"
         working-directory: ${{ github.workspace }}/workspace
       - name: Update debian changelog
+        if: ${{ github.event.inputs.changelog-description != '' }}
         run: |
           dch --newversion ${{ steps.version.outputs.VERSION }} --controlmaint "${{ github.event.inputs.changelog-description }}"
           dch --release --controlmaint ""
@@ -45,6 +46,13 @@ jobs:
           git push
           git push --tags
         working-directory: ${{ github.workspace }}/workspace
+      - name: Update tag
+        if: ${{ github.event.inputs.changelog-description == '' }}
+        run: |
+          dch --newversion ${{ steps.version.outputs.VERSION }} --controlmaint "${{ github.event.inputs.changelog-description }}"
+          dch --release --controlmaint ""
+          git tag -a ${{ steps.version.outputs.VERSION }} -m 'Add tag for version ${{ steps.version.outputs.VERSION }}'
+          git push --tags
       - name: Build package
         run: debuild -b
         working-directory: ${{ github.workspace }}/workspace
