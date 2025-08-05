@@ -2,13 +2,13 @@ cdapci-dkms (0.6.0.1) jammy; urgency=medium
 
   * Fix kernel 6.13+ compatibility for mmap
 
--- Egor Pomozov <epomozov@degirum.com>  Wed, 29 Jul 2025 12:00:00 +0000
+ -- Alexander Bolotov <bolotov@degirum.com>  Wed, 29 Jul 2025 12:00:00 +0000
 
 cdapci-dkms (0.6.0.0) jammy; urgency=medium
 
   * Adding mmap to /dev for docker run without privileges
 
--- Sivakumar Thirunavukkarasu <siva@degirum.com>  Wed, 29 Jan 2025 12:00:00 +0000
+ -- Sivakumar Thirunavukkarasu <siva@degirum.com>  Wed, 29 Jan 2025 12:00:00 +0000
 
 cdapci-dkms (0.5.0.3) jammy; urgency=medium
 

@@ -5,7 +5,7 @@ on:
       changelog-description:
         description: "Description of changes for debian changelog file and Github tag."
         type: string
-        required: true
+        required: false
         default: ""
 jobs:
   Build-DSC-Repo:
@@ -14,7 +14,7 @@ jobs:
       - name: Install prerequisites and set up git
         run: |
           sudo apt update
-          sudo apt install gnupg dput dh-make devscripts lintian dpkg-dev reprepro dkms
+          sudo apt install gnupg dput dh-make devscripts lintian dpkg-dev reprepro dkms build-essential dh-dkms
           git config --global user.name 'Alexander Bolotov'
           git config --global user.email 'bolotov@degirum.com'
       - name: Check out repository code
@@ -36,6 +36,7 @@ jobs:
         run: echo "Version ${{ steps.version.outputs.VERSION }} sourced from src/cdadrv.c"
         working-directory: ${{ github.workspace }}/workspace
       - name: Update debian changelog
+        if: ${{ github.event.inputs.changelog-description != '' }}
         run: |
           dch --newversion ${{ steps.version.outputs.VERSION }} --controlmaint "${{ github.event.inputs.changelog-description }}"
           dch --release --controlmaint ""
@@ -53,4 +54,14 @@ jobs:
         with:
           name: cdapci
           path: ${{ github.workspace }}/cdapci-dkms_${{ steps.version.outputs.VERSION}}_all.deb
-      
+      - name: Update tag only
+        if: ${{ github.event.inputs.changelog-description == '' }}
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ steps.version.outputs.VERSION }}',
+              sha: context.sha
+            })
