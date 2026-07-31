@@ -103,7 +103,7 @@ static struct class cda_class = {
  */
 static void cdadev_free(struct cda_dev *cdadev)
 {
-	ida_simple_remove(&cdaminor_ida, cdadev->minor);
+	ida_free(&cdaminor_ida, cdadev->minor);
 	device_del(&cdadev->dev);
 	put_device(&cdadev->dev);
 }
@@ -123,7 +123,7 @@ static int cdadev_init(struct cda_dev *cdadev)
 	if (!cdadev->dummy_blk)
 		goto alloc_dummy;
 	idr_init(&cdadev->mblk_idr);
-	ret = ida_simple_get(&cdaminor_ida, 0, CDA_DEV_MINOR_MAX, GFP_KERNEL);
+	ret = ida_alloc_range(&cdaminor_ida, 0, CDA_DEV_MINOR_MAX - 1, GFP_KERNEL);
 	if (ret < 0)
 		goto err_minor_get;
 
@@ -149,7 +149,7 @@ static int cdadev_init(struct cda_dev *cdadev)
 	return 0;
 err_device_add:
 err_set_name:
-	ida_simple_remove(&cdaminor_ida, cdadev->minor);
+	ida_free(&cdaminor_ida, cdadev->minor);
 err_minor_get:
 alloc_dummy:
 	put_device(dev);
