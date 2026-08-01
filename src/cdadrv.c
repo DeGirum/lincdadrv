@@ -14,6 +14,7 @@
 #include <linux/fs.h>
 #include <linux/init.h>
 #include <linux/module.h>
+#include <generated/utsrelease.h>
 
 #include "cdadrv.h"
 #include "cdaioctl.h"
@@ -387,6 +388,7 @@ static int __init cdadrv_init(void)
 {
 	int ret;
 
+	pr_info("loaded, compiled for Linux %s\n", UTS_RELEASE);
 	if (test_probe) {
 		pr_info("Test run. Nothing initialized\n");
 		return 0;
