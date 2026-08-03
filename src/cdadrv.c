@@ -14,6 +14,7 @@
 #include <linux/fs.h>
 #include <linux/init.h>
 #include <linux/module.h>
+#include <generated/utsrelease.h>
 
 #include "cdadrv.h"
 #include "cdaioctl.h"
@@ -103,7 +104,11 @@ static struct class cda_class = {
  */
 static void cdadev_free(struct cda_dev *cdadev)
 {
+#if KERNEL_VERSION(6, 18, 0) <= LINUX_VERSION_CODE
+	ida_free(&cdaminor_ida, cdadev->minor);
+#else
 	ida_simple_remove(&cdaminor_ida, cdadev->minor);
+#endif
 	device_del(&cdadev->dev);
 	put_device(&cdadev->dev);
 }
@@ -123,7 +128,11 @@ static int cdadev_init(struct cda_dev *cdadev)
 	if (!cdadev->dummy_blk)
 		goto alloc_dummy;
 	idr_init(&cdadev->mblk_idr);
+#if KERNEL_VERSION(6, 18, 0) <= LINUX_VERSION_CODE
+	ret = ida_alloc_range(&cdaminor_ida, 0, CDA_DEV_MINOR_MAX - 1, GFP_KERNEL);
+#else
 	ret = ida_simple_get(&cdaminor_ida, 0, CDA_DEV_MINOR_MAX, GFP_KERNEL);
+#endif
 	if (ret < 0)
 		goto err_minor_get;
 
@@ -149,7 +158,11 @@ static int cdadev_init(struct cda_dev *cdadev)
 	return 0;
 err_device_add:
 err_set_name:
+#if KERNEL_VERSION(6, 18, 0) <= LINUX_VERSION_CODE
+	ida_free(&cdaminor_ida, cdadev->minor);
+#else
 	ida_simple_remove(&cdaminor_ida, cdadev->minor);
+#endif
 err_minor_get:
 alloc_dummy:
 	put_device(dev);
@@ -375,6 +388,7 @@ static int __init cdadrv_init(void)
 {
 	int ret;
 
+	pr_info("loaded, compiled for Linux %s\n", UTS_RELEASE);
 	if (test_probe) {
 		pr_info("Test run. Nothing initialized\n");
 		return 0;
