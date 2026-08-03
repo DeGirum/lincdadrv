@@ -1,3 +1,9 @@
+cdapci-dkms (0.6.0.2) noble; urgency=medium
+
+  * Fix Linux 6.18+ compilation error due to ida_* kernel API changes
+
+ -- Alexander Bolotov <bolotov@degirum.com>  Mon, 03 Aug 2026 23:05:36 +0000
+
 cdapci-dkms (0.6.0.1) jammy; urgency=medium
 
   * Fix kernel 6.13+ compatibility for mmap
