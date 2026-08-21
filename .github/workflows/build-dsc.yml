@@ -27,6 +27,7 @@ jobs:
           repository: DeGirum/DeGirum.github.io
           ref: master
           path: documentation
+          token: ${{ secrets.MYTOKEN }}
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v5
