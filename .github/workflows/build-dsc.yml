@@ -18,9 +18,15 @@ jobs:
           git config --global user.name 'Alexander Bolotov'
           git config --global user.email 'bolotov@degirum.com'
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: workspace
+      - name: Check out published APT repository
+        uses: actions/checkout@v4
+        with:
+          repository: DeGirum/DeGirum.github.io
+          ref: master
+          path: documentation
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v5
@@ -54,6 +60,25 @@ jobs:
         with:
           name: cdapci
           path: ${{ github.workspace }}/cdapci-dkms_${{ steps.version.outputs.VERSION}}_all.deb
+      - name: Build signed APT repository artifact
+        run: |
+          set -euo pipefail
+          package="$GITHUB_WORKSPACE/cdapci-dkms_${{ steps.version.outputs.VERSION }}_all.deb"
+          repo="$GITHUB_WORKSPACE/documentation/docs/apt-repo"
+
+          test "$(dpkg-deb -f "$package" Package)" = cdapci-dkms
+          test "$(dpkg-deb -f "$package" Version)" = "${{ steps.version.outputs.VERSION }}"
+          reprepro -b "$repo" includedeb ORCA "$package"
+          reprepro -b "$repo" check ORCA
+
+          tar --exclude='apt-repo/db/lockfile' \
+            -czf "$GITHUB_WORKSPACE/orca-apt-repo-${{ steps.version.outputs.VERSION }}.tar.gz" \
+            -C "$GITHUB_WORKSPACE/documentation/docs" apt-repo
+      - name: Upload signed APT repository artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: orca-apt-repo-${{ steps.version.outputs.VERSION }}
+          path: ${{ github.workspace }}/orca-apt-repo-${{ steps.version.outputs.VERSION }}.tar.gz
       - name: Update tag only
         if: ${{ github.event.inputs.changelog-description == '' }}
         uses: actions/github-script@v5
